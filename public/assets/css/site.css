@@ -549,12 +549,6 @@ body {
   padding: 0;
   margin: 0;
   background-color: #eee;
-  min-height: 100%;
-  display: -webkit-box;
-  display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-          flex-direction: column;
 }
 
 figure {
@@ -582,99 +576,34 @@ img {
   box-sizing: content-box;
   text-decoration: none;
   cursor: pointer;
-  color: #3c3c3c;
   background: #96def0;
   border-width: 2px 2px 2px 2px;
   border-style: solid;
   border-color: #9f9f9f;
 }
 .btn:hover {
-  color: #3c3c3c;
   background: #53c9e6;
   border-width: 2px 2px 2px 2px;
   border-style: solid;
   border-color: #3c3c3c;
 }
 .btn:focus {
-  color: #3c3c3c;
   background: #3dc2e3;
   border-width: 2px 2px 2px 2px;
   border-style: solid;
   border-color: #3c3c3c;
 }
 .btn:active {
-  color: #3c3c3c;
   background: #69d0ea;
   border-width: 2px 2px 2px 2px;
   border-style: solid;
+  border-color: #3c3c3c;
 }
 .btn:disabled {
-  color: #3c3c3c;
-  background: #adadad;
+  background: #69d0ea;
   border-width: 2px 2px 2px 2px;
   border-style: solid;
-  border-color: #7a7a7a;
-}
-
-.table {
-  font-family: Frutiger, "Frutiger Linotype", Univers, Calibri, "Gill Sans", "Gill Sans MT", "Myriad Pro", Myriad, "DejaVu Sans Condensed", "Liberation Sans", "Nimbus Sans L", Tahoma, Geneva, "Helvetica Neue", Helvetica, sans-serif;
-  table-layout: fixed;
-  border-collapse: collapse;
-  width: 100%;
-  margin: 24px 0 24px 0;
-  background-color: #fff;
-  border-width: 2px 2px 2px 2px;
-  border-style: solid;
-  border-color: #000;
-}
-.table caption {
-  padding: 1.5rem 0;
-  font-size: 1.375rem;
-  background: #fff;
-  font-family: inherit;
-  font-weight: 700;
-  color: #3c3c3c;
-  text-align: center;
-  border-width: 0 0 1px 0;
-  border-style: solid;
-  border-color: #eee;
-}
-.table thead td,
-.table thead th {
-  padding: 1rem 0;
-  font-size: 1rem;
-  background: #eee;
-  font-family: inherit;
-  font-weight: 400;
-  color: #3c3c3c;
-  text-align: center;
-  border-width: 1px 1px 1px 1px;
-  border-style: solid;
-  border-color: #fff;
-}
-.table tbody td {
-  padding: 0.5rem 0;
-  font-size: 1rem;
-  background: #eee;
-  font-family: inherit;
-  font-weight: 400;
-  color: #3c3c3c;
-  text-align: center;
-  border-width: 1px 1px 1px 1px;
-  border-style: solid;
-  border-color: #fff;
-}
-.table tfoot td {
-  padding: 0.5rem 0;
-  font-size: 1rem;
-  background: #eee;
-  font-family: inherit;
-  font-weight: 400;
-  color: #3c3c3c;
-  text-align: center;
-  border-width: 1px 1px 1px 1px;
-  border-style: solid;
-  border-color: #fff;
+  border-color: #3c3c3c;
 }
 
 .container {
@@ -688,3 +617,4 @@ img {
   display: table;
   clear: both;
 }
+/*# sourceMappingURL=site.css.map*/
