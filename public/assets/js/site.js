@@ -93,7 +93,432 @@
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-eval("/*! head.responsive - v2.0.0-alpha */\n\n/*\n * HeadJS     The only script in your <HEAD>\n * Author     Tero Piirainen  (tipiirai)\n * Maintainer Robert Hoffmann (itechnology)\n * License    MIT / http://bit.ly/mit-license\n * WebSite    http://headjs.com\n */\n\n/* Feature List\n *\n * HashChange handling\n * lt/gt handling for browser versions, viewport width, and viewport height\n * Event handling: head.on(), based on MinPubSub\n * Make as many variables as possible availiable in css AND js\n * Detect phone, tablet, mobile, desktop\n * We could detect phone/tablet by measuring the aspect ratio of the screen resolution (not viewport) and making sure it's .mobile-true\n * Move all features to api.features[]\n * Make groups: api.viewport, api.screen, api.browser, api.features, api.page, api.section[], api.hash[]\n * Maybe move api.features.landscape/portrait to api.viewport ..it is more related to that than an actual feature\n * Maybe move api.features.mobile/desktop/touch to api.browser ..it is more related to that than an actual feature\n * We no longer declare min/max versions of browsers (too many out there), instead each version we wish to generate lt/gt for\n * Someone proposed to add operating system detection: window, linux, ios, mac, etc ..i'm doubtful to being able to detect that consistently with a minimal amount of regexp\n */\n(function (win, undefined) {\n  \"use strict\"; //#region Variables\n\n  var doc = win.document,\n      nav = win.navigator,\n      loc = win.location,\n      html = doc.documentElement,\n      klass = [],\n      conf = {\n    widths: [240, 320, 480, 640, 768, 800, 1024, 1280, 1366, 1440, 1680, 1920],\n    heights: [320, 480, 600, 768, 800, 900, 1050],\n    widthCss: {\n      \"gt\": true,\n      \"lt\": true\n    },\n    heightCss: {\n      \"gt\": true,\n      \"lt\": true\n    },\n    browsers: {\n      \"ie\": [7, 11],\n      \"ff\": [4, 26] //,\"chrome\" : [23, 33]\n      //,\"ios\"    : [4, 7]\n      //,\"android\": [2, 4]\n      //,\"webkit\" : [10, 12]\n      //,\"opera\"  : [10, 12]\n\n    },\n    browserCss: {\n      \"gt\": true,\n      \"lt\": true\n    },\n    html5: true,\n    hashtags: true,\n    page: \"page\",\n    section: \"section\",\n    hash: \"hash\",\n    head: \"head\"\n  };\n\n  if (win.head_conf) {\n    for (var item in win.head_conf) {\n      if (win.head_conf[item] !== undefined) {\n        conf[item] = win.head_conf[item];\n      }\n    }\n  }\n\n  var head = conf.head || \"head\";\n  var api = win[head] = win[head] || {}; //#endregion\n  //#region Experimental\n  // INFO: not sure if this is needed\n  // In anycase it allows you to create namespaces on the fly without declaring a bunch of multiple objects\n  // makeNameSpace(\"head.viewport.height\");\n\n  function makeNameSpace() {\n    var a = arguments,\n        o = api,\n        j,\n        d,\n        arg; // Array caching performance: http://bonsaiden.github.com/JavaScript-Garden/#array.general\n\n    for (var i = 0, l = a.length; i < l; i++) {\n      o = api; //Reset base object per argument or it will get reused from the last\n\n      arg = a[i];\n\n      if (arg.indexOf(\".\") > -1) {\n        //Skip this if no \".\" is present\n        d = arg.split(\".\");\n\n        for (j = d[0] === head ? 1 : 0; j < d.length; j++) {\n          o[d[j]] = o[d[j]] || {};\n          o = o[d[j]];\n        }\n      } else {\n        o[arg] = o[arg] || {};\n        o = o[arg]; //Reset base object to the new object so it's returned\n      }\n    }\n\n    return o;\n  } // get the value closest to num from an array of numbers\n  // this can be used for determining a height/width breakpoint\n  // still, is it usefull to determine exact/closest breakpoint when we already have lt/gt\n\n\n  function closest(num, arrNum) {\n    var c = null;\n\n    for (var i = 0, l = arrNum.length; i < l; i++) {\n      if (c == null || Math.abs(arrNum[i] - num) < Math.abs(c - num)) {\n        c = arrNum[i];\n      }\n    }\n\n    return c;\n  } // NEEDED ?\n\n\n  function push(name, value, isCss) {\n    // INFO: the idea is to be able to push a value to a specific namespace (api.browser, api.viewport, ..)\n    // we need a clean way to push values to CSS as well as to JS\n    // we also need to be able to add, update, and remove those values\n    // ...still figuring this out\n    // push(\"h\", ih, css);\n    // push(api.viewport.height, ih, js);\n    // push(\"viewport\", \"height\", value);\n    api[name][key] = value;\n\n    if (isCss) {\n      klass[klass.length] = name.concat(\"-\", value);\n    } else {\n      name = value;\n    }\n\n    api.setFeature();\n  }\n\n  ; //#endregion\n  //#region Internal Functions\n\n  function each(arr, fn) {\n    // Array caching performance: http://bonsaiden.github.com/JavaScript-Garden/#array.general\n    for (var i = 0, l = arr.length; i < l; i++) {\n      fn.call(arr, arr[i], i);\n    }\n  }\n\n  function pushClass(name) {\n    klass[klass.length] = name;\n  }\n\n  function removeClass(name) {\n    // need to test for both space and no space\n    // https://github.com/headjs/headjs/issues/270\n    // https://github.com/headjs/headjs/issues/226\n    var re = new RegExp(\" ?\\\\b\" + name + \"\\\\b\");\n    html.className = html.className.replace(re, \"\");\n  } //#endregion\n\n\n  api.features = {};\n\n  api.setFeature = function (key, enabled, queue) {\n    // internal: apply all classes\n    if (!key) {\n      html.className += \" \" + klass.join(\" \");\n      klass = [];\n      return api;\n    }\n\n    if (Object.prototype.toString.call(enabled) === \"[object Function]\") {\n      enabled = enabled.call();\n    }\n\n    pushClass(key + \"-\" + enabled);\n    api.features[key] = !!enabled; // apply class to HTML element\n\n    if (!queue) {\n      // don't really like the idea of doing 3 operations in a row here\n      removeClass(key + \"-true\");\n      removeClass(key + \"-false\");\n      removeClass(key);\n      api.setFeature();\n    }\n\n    return api;\n  }; //#region Quick Features\n  // we support js, we got here !\n\n\n  api.setFeature(\"js\", true, true); // browser type & version\n\n  var ua = nav.userAgent.toLowerCase(),\n      mobile = /mobile|android|kindle|silk|midp|phone|(windows .+arm|touch)/.test(ua); // useful for enabling/disabling feature (we can consider a desktop navigator to have more cpu/gpu power)\n\n  api.setFeature(\"mobile\", mobile, true);\n  api.setFeature(\"desktop\", !mobile, true); // are we on a touch device ?\n\n  api.setFeature(\"touch\", \"ontouchstart\" in win, true); // used by css router\n\n  api.setFeature(\"hashchange\", \"onhashchange\" in win, true); //#endregion\n  //#region Browser Detection\n  // http://www.zytrax.com/tech/web/browser_ids.htm\n  // http://www.zytrax.com/tech/web/mobile_ids.html\n\n  ua = /(chrome|firefox)[ \\/]([\\w.]+)/.exec(ua) || // Chrome & Firefox\n  /(iphone|ipad|ipod)(?:.*version)?[ \\/]([\\w.]+)/.exec(ua) || // Mobile IOS\n  /(android)(?:.*version)?[ \\/]([\\w.]+)/.exec(ua) || // Mobile Webkit\n  /(webkit|opera)(?:.*version)?[ \\/]([\\w.]+)/.exec(ua) || // Safari & Opera\n  /(msie) ([\\w.]+)/.exec(ua) || /(trident).+rv:(\\w.)+/.exec(ua) || [];\n  var browser = ua[1],\n      version = parseFloat(ua[2]);\n\n  switch (browser) {\n    case \"msie\":\n    case \"trident\":\n      browser = \"ie\";\n      version = doc.documentMode || version;\n      break;\n\n    case \"firefox\":\n      browser = \"ff\";\n      break;\n\n    case \"ipod\":\n    case \"ipad\":\n    case \"iphone\":\n      browser = \"ios\";\n      break;\n\n    case \"webkit\":\n      browser = \"safari\";\n      break;\n  } // Browser vendor and version\n\n\n  api.browser = {\n    name: browser,\n    version: version\n  };\n  api.browser[browser] = true;\n\n  for (var key in conf.browsers) {\n    if (browser === key) {\n      // is this usefull ?\n      // we have the exact browser version below\n      // but this also applies to other browsers, so we could have .ff and .ie-false\n      pushClass(key + \"-true\"); // Array caching performance: http://bonsaiden.github.com/JavaScript-Garden/#array.general\n\n      for (var i = 0, l = conf.browsers[key].length; i < l; i++) {\n        var supported = conf.browsers[key][i];\n\n        if (conf.browserCss.gt && version > supported) {\n          pushClass(key + \"-gt\" + supported);\n        } else if (conf.browserCss.lt && version < supported) {\n          pushClass(key + \"-lt\" + supported);\n        }\n      }\n    } else {\n      // is this usefull ?\n      // we have the exact browser version below\n      // but this also applies to other browsers, so we could have .ie and .ff-false\n      pushClass(key + \"-false\");\n    }\n  }\n\n  pushClass(browser);\n  pushClass(browser + parseInt(version, 10)); //#endregion\n  //#region HTML5 Shim\n\n  if (conf.html5 && browser === \"ie\" && version < 9) {\n    // HTML5 support : you still need to add html5 css initialization styles to your site\n    // See: /site/assets/css/html5.min.css\n    each(\"abbr|article|aside|audio|canvas|details|figcaption|figure|footer|header|hgroup|main|mark|meter|nav|output|progress|section|summary|time|video\".split(\"|\"), function (el) {\n      doc.createElement(el);\n    });\n  } //#endregion\n  //#region CSS Router: Page/Section\n\n\n  function buildRoute(path) {\n    /// <summary>can be used to emulate hashchange event by subscribing to win/doc onclick and testing if url has changed</summary>\n    var items = loc.pathname.split(\"/\");\n    each(items, function (el, i) {\n      if (this.length > 2 && this[i + 1] !== undefined) {\n        if (i) {\n          pushClass(conf.section + \"-\" + this.slice(i, i + 1).join(\"-\").toLowerCase().replace(/\\./g, \"-\"));\n        }\n      } else {\n        // pageId\n        var id = el || \"index\",\n            index = id.indexOf(\".\");\n\n        if (index > 0) {\n          id = id.substring(0, index);\n        }\n\n        html.id = conf.page + \"-\" + id.toLowerCase(); // on root?\n\n        if (!i) {\n          pushClass(conf.section + \"-root\");\n        }\n      }\n    });\n  }\n\n  buildRoute(loc.pathname); //#endregion\n  //#region CSS Router: HasChange\n  // contains current hashes, so we can remove them when a change occurs\n\n  var hashCache = [];\n\n  function onhashChange() {\n    // remove old values\n    each(hashCache, function (el) {\n      removeClass(el);\n    }); // get current hash\n\n    var items = loc.hash.replace(/(!|#)/g, \"\").split(\"/\"); // add new values\n\n    each(items, function (el) {\n      if (!!el) {\n        var name = conf.hash + \"-\" + el.toLowerCase().replace(/\\./g, \"-\");\n        hashCache.push(name);\n        pushClass(name);\n      }\n    }); // commit changes\n\n    api.setFeature();\n  } //#endregion\n  //#region Screen Detection\n  // screen information placeholder\n\n\n  api.screen = {}; // viewport information placeholder\n\n  api.viewport = {}; // viewport resolutions: w-100, lt-480, lt-1024 ...\n\n  function screenSize() {\n    // remove earlier sizes\n    html.className = html.className.replace(/ (w-|w-gt|w-lt|h-|h-gt|h-lt)\\d+/g, \"\"); // Viewport width\n\n    var iw = win.innerWidth || html.clientWidth,\n        ow = win.outerWidth || win.screen.width;\n    api.viewport.width = iw;\n    api.browser.width = ow; // INFO: See comment on function closest()\n    //pushClass(\"w-\" + iw);\n\n    pushClass(\"w-\" + closest(iw, conf.widths));\n    each(conf.widths, function (width) {\n      if (conf.widthCss.gt && iw > width) {\n        pushClass(\"w-gt\" + width);\n      } else if (conf.widthCss.lt && iw < width) {\n        pushClass(\"w-lt\" + width);\n      }\n    }); // Viewport height\n\n    var ih = win.innerHeight || html.clientHeight,\n        oh = win.outerHeight || win.screen.height;\n    api.viewport.height = ih;\n    api.browser.height = oh; // INFO: See comment on function closest()\n    //pushClass(\"h-\" + ih);\n\n    pushClass(\"h-\" + closest(ih, conf.heights));\n    each(conf.heights, function (height) {\n      if (conf.heightCss.gt && ih > height) {\n        pushClass(\"h-gt\" + height);\n      } else if (conf.heightCss.lt && ih < height) {\n        pushClass(\"h-lt\" + height);\n      }\n    }); // INFO: maybe we should detect and take the aspect ratio into account too ?\n    // A desktop browser whose window can be resized, might give weird results (on a responsive site) if it reports portrait mode, when in reality it's just a few pixels less than landscape\n    // For example:\n    // Detect based on Ratio. 0.8-0.9 seem like a good threshhold compromise, even if in reality 0.99 can be considered as portrait too.\n    // Common mobile ratios are: 0.56: 720x1280, 0.6: 480x800, 0.66: 320x480 640x960, 0.75: 600x800 768x1024\n    // Galaxy S 1/2 480x800 3 720x1280, IPhone 4/4S 640�960, IPhone 5 640�1136 ..seems like 480 is a good target\n    // var portrait  = ((iw / ih) <= 0.85);\n    // var landscape = !portrait;\n\n    api.setFeature(\"portrait\", ih > iw);\n    api.setFeature(\"landscape\", ih < iw);\n  }\n\n  screenSize(); //api.setFeature();\n  // Throttle navigators from triggering too many resize events\n\n  var resizeId = 0;\n\n  function onResize() {\n    win.clearTimeout(resizeId);\n    resizeId = win.setTimeout(screenSize, 50);\n  } //#endregion\n  //#region EventHandlers\n  // Manually attach, as to not overwrite existing handler\n\n\n  if (win.addEventListener) {\n    if (conf.hashtags && api.features.hashchange) {\n      win.addEventListener(\"hashchange\", onhashChange, false); // first load\n\n      onhashChange();\n    }\n\n    win.addEventListener(\"resize\", onResize, false);\n  } else {\n    // IE8 and less\n    if (conf.hashtags && api.features.hashchange) {\n      win.attachEvent(\"onhashchange\", onhashChange); // first load\n\n      onhashChange();\n    }\n\n    win.attachEvent(\"onresize\", onResize);\n  } //#endregion\n  //#region Public Exports\n  // we should probably stop declaring public stuff above and make a \"exports\" section here\n  //#endregion\n\n})(window);//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIndlYnBhY2s6Ly8vLi9zcmMvanMvbW9kdWxlcy9oZWFkLmpzPzJjNzUiXSwibmFtZXMiOlsid2luIiwidW5kZWZpbmVkIiwiZG9jIiwiZG9jdW1lbnQiLCJuYXYiLCJuYXZpZ2F0b3IiLCJsb2MiLCJsb2NhdGlvbiIsImh0bWwiLCJkb2N1bWVudEVsZW1lbnQiLCJrbGFzcyIsImNvbmYiLCJ3aWR0aHMiLCJoZWlnaHRzIiwid2lkdGhDc3MiLCJoZWlnaHRDc3MiLCJicm93c2VycyIsImJyb3dzZXJDc3MiLCJodG1sNSIsImhhc2h0YWdzIiwicGFnZSIsInNlY3Rpb24iLCJoYXNoIiwiaGVhZCIsImhlYWRfY29uZiIsIml0ZW0iLCJhcGkiLCJtYWtlTmFtZVNwYWNlIiwiYSIsImFyZ3VtZW50cyIsIm8iLCJqIiwiZCIsImFyZyIsImkiLCJsIiwibGVuZ3RoIiwiaW5kZXhPZiIsInNwbGl0IiwiY2xvc2VzdCIsIm51bSIsImFyck51bSIsImMiLCJNYXRoIiwiYWJzIiwicHVzaCIsIm5hbWUiLCJ2YWx1ZSIsImlzQ3NzIiwia2V5IiwiY29uY2F0Iiwic2V0RmVhdHVyZSIsImVhY2giLCJhcnIiLCJmbiIsImNhbGwiLCJwdXNoQ2xhc3MiLCJyZW1vdmVDbGFzcyIsInJlIiwiUmVnRXhwIiwiY2xhc3NOYW1lIiwicmVwbGFjZSIsImZlYXR1cmVzIiwiZW5hYmxlZCIsInF1ZXVlIiwiam9pbiIsIk9iamVjdCIsInByb3RvdHlwZSIsInRvU3RyaW5nIiwidWEiLCJ1c2VyQWdlbnQiLCJ0b0xvd2VyQ2FzZSIsIm1vYmlsZSIsInRlc3QiLCJleGVjIiwiYnJvd3NlciIsInZlcnNpb24iLCJwYXJzZUZsb2F0IiwiZG9jdW1lbnRNb2RlIiwic3VwcG9ydGVkIiwiZ3QiLCJsdCIsInBhcnNlSW50IiwiZWwiLCJjcmVhdGVFbGVtZW50IiwiYnVpbGRSb3V0ZSIsInBhdGgiLCJpdGVtcyIsInBhdGhuYW1lIiwic2xpY2UiLCJpZCIsImluZGV4Iiwic3Vic3RyaW5nIiwiaGFzaENhY2hlIiwib25oYXNoQ2hhbmdlIiwic2NyZWVuIiwidmlld3BvcnQiLCJzY3JlZW5TaXplIiwiaXciLCJpbm5lcldpZHRoIiwiY2xpZW50V2lkdGgiLCJvdyIsIm91dGVyV2lkdGgiLCJ3aWR0aCIsImloIiwiaW5uZXJIZWlnaHQiLCJjbGllbnRIZWlnaHQiLCJvaCIsIm91dGVySGVpZ2h0IiwiaGVpZ2h0IiwicmVzaXplSWQiLCJvblJlc2l6ZSIsImNsZWFyVGltZW91dCIsInNldFRpbWVvdXQiLCJhZGRFdmVudExpc3RlbmVyIiwiaGFzaGNoYW5nZSIsImF0dGFjaEV2ZW50Iiwid2luZG93Il0sIm1hcHBpbmdzIjoiQUFBQTs7QUFDQTs7Ozs7Ozs7QUFPQTs7Ozs7Ozs7Ozs7Ozs7O0FBZUMsV0FBU0EsR0FBVCxFQUFjQyxTQUFkLEVBQXlCO0FBQ3RCLGVBRHNCLENBR3RCOztBQUNBLE1BQUlDLEdBQUcsR0FBS0YsR0FBRyxDQUFDRyxRQUFoQjtBQUFBLE1BQ0lDLEdBQUcsR0FBS0osR0FBRyxDQUFDSyxTQURoQjtBQUFBLE1BRUlDLEdBQUcsR0FBS04sR0FBRyxDQUFDTyxRQUZoQjtBQUFBLE1BR0lDLElBQUksR0FBSU4sR0FBRyxDQUFDTyxlQUhoQjtBQUFBLE1BSUlDLEtBQUssR0FBRyxFQUpaO0FBQUEsTUFLSUMsSUFBSSxHQUFJO0FBQ0pDLFVBQU0sRUFBTSxDQUFDLEdBQUQsRUFBTSxHQUFOLEVBQVcsR0FBWCxFQUFnQixHQUFoQixFQUFxQixHQUFyQixFQUEwQixHQUExQixFQUErQixJQUEvQixFQUFxQyxJQUFyQyxFQUEyQyxJQUEzQyxFQUFpRCxJQUFqRCxFQUF1RCxJQUF2RCxFQUE2RCxJQUE3RCxDQURSO0FBRUpDLFdBQU8sRUFBSyxDQUFDLEdBQUQsRUFBTSxHQUFOLEVBQVcsR0FBWCxFQUFnQixHQUFoQixFQUFxQixHQUFyQixFQUEwQixHQUExQixFQUErQixJQUEvQixDQUZSO0FBR0pDLFlBQVEsRUFBSTtBQUFFLFlBQU0sSUFBUjtBQUFjLFlBQU07QUFBcEIsS0FIUjtBQUlK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QXpDO0FBRUgsR0FWRCxNQVVPO0FBQ0g7QUFDQSxRQUFJcEcsSUFBSSxDQUFDUSxRQUFMLElBQWlCTyxHQUFHLENBQUNvQyxRQUFKLENBQWFxRCxVQUFsQyxFQUE4QztBQUMxQ25ILFNBQUcsQ0FBQ29ILFdBQUosQ0FBZ0IsY0FBaEIsRUFBZ0N0QixZQUFoQyxFQUQwQyxDQUcxQzs7QUFDQUEsa0JBQVk7QUFDZjs7QUFFRDlGLE9BQUcsQ0FBQ29ILFdBQUosQ0FBZ0IsVUFBaEIsRUFBNEJMLFFBQTVCO0FBQ0gsR0FoYXFCLENBaWF0QjtBQUVBO0FBQ0E7QUFDQTs7QUFDSCxDQXRhQSxFQXNhQ00sTUF0YUQsQ0FBRCIsImZpbGUiOiIuL3NyYy9qcy9tb2R1bGVzL2hlYWQuanMuanMiLCJzb3VyY2VzQ29udGVudCI6WyIvKiEgaGVhZC5yZXNwb25zaXZlIC0gdjIuMC4wLWFscGhhICovXG4vKlxuICogSGVhZEpTICAgICBUaGUgb25seSBzY3JpcHQgaW4geW91ciA8SEVBRD5cbiAqIEF1dGhvciAgICAgVGVybyBQaWlyYWluZW4gICh0aXBpaXJhaSlcbiAqIE1haW50YWluZXIgUm9iZXJ0IEhvZmZtYW5uIChpdGVjaG5vbG9neSlcbiAqIExpY2Vuc2UgICAgTUlUIC8gaHR0cDovL2JpdC5seS9taXQtbGljZW5zZVxuICogV2ViU2l0ZSAgICBodHRwOi8vaGVhZGpzLmNvbVxuICovXG4vKiBGZWF0dXJlIExpc3RcbiAqXG4gKiBIYXNoQ2hhbmdlIGhhbmRsaW5nXG4gKiBsdC9ndCBoYW5kbGluZyBmb3IgYnJvd3NlciB2ZXJzaW9ucywgdmlld3BvcnQgd2lkdGgsIGFuZCB2aWV3cG9ydCBoZWlnaHRcbiAqIEV2ZW50IGhhbmRsaW5nOiBoZWFkLm9uKCksIGJhc2VkIG9uIE1pblB1YlN1YlxuICogTWFrZSBhcyBtYW55IHZhcmlhYmxlcyBhcyBwb3NzaWJsZSBhdmFpbGlhYmxlIGluIGNzcyBBTkQganNcbiAqIERldGVjdCBwaG9uZSwgdGFibGV0LCBtb2JpbGUsIGRlc2t0b3BcbiAqIFdlIGNvdWxkIGRldGVjdCBwaG9uZS90YWJsZXQgYnkgbWVhc3VyaW5nIHRoZSBhc3BlY3QgcmF0aW8gb2YgdGhlIHNjcmVlbiByZXNvbHV0aW9uIChub3Qgdmlld3BvcnQpIGFuZCBtYWtpbmcgc3VyZSBpdCdzIC5tb2JpbGUtdHJ1ZVxuICogTW92ZSBhbGwgZmVhdHVyZXMgdG8gYXBpLmZlYXR1cmVzW11cbiAqIE1ha2UgZ3JvdXBzOiBhcGkudmlld3BvcnQsIGFwaS5zY3JlZW4sIGFwaS5icm93c2VyLCBhcGkuZmVhdHVyZXMsIGFwaS5wYWdlLCBhcGkuc2VjdGlvbltdLCBhcGkuaGFzaFtdXG4gKiBNYXliZSBtb3ZlIGFwaS5mZWF0dXJlcy5sYW5kc2NhcGUvcG9ydHJhaXQgdG8gYXBpLnZpZXdwb3J0IC4uaXQgaXMgbW9yZSByZWxhdGVkIHRvIHRoYXQgdGhhbiBhbiBhY3R1YWwgZmVhdHVyZVxuICogTWF5YmUgbW92ZSBhcGkuZmVhdHVyZXMubW9iaWxlL2Rlc2t0b3AvdG91Y2ggdG8gYXBpLmJyb3dzZXIgLi5pdCBpcyBtb3JlIHJlbGF0ZWQgdG8gdGhhdCB0aGFuIGFuIGFjdHVhbCBmZWF0dXJlXG4gKiBXZSBubyBsb25nZXIgZGVjbGFyZSBtaW4vbWF4IHZlcnNpb25zIG9mIGJyb3dzZXJzICh0b28gbWFueSBvdXQgdGhlcmUpLCBpbnN0ZWFkIGVhY2ggdmVyc2lvbiB3ZSB3aXNoIHRvIGdlbmVyYXRlIGx0L2d0IGZvclxuICogU29tZW9uZSBwcm9wb3NlZCB0byBhZGQgb3BlcmF0aW5nIHN5c3RlbSBkZXRlY3Rpb246IHdpbmRvdywgbGludXgsIGlvcywgbWFjLCBldGMgLi5pJ20gZG91YnRmdWwgdG8gYmVpbmcgYWJsZSB0byBkZXRlY3QgdGhhdCBjb25zaXN0ZW50bHkgd2l0aCBhIG1pbmltYWwgYW1vdW50IG9mIHJlZ2V4cFxuICovXG4oZnVuY3Rpb24od2luLCB1bmRlZmluZWQpIHtcbiAgICBcInVzZSBzdHJpY3RcIjtcblxuICAgIC8vI3JlZ2lvbiBWYXJpYWJsZXNcbiAgICB2YXIgZG9jICAgPSB3aW4uZG9jdW1lbnQsXG4gICAgICAgIG5hdiAgID0gd2luLm5hdmlnYXRvcixcbiAgICAgICAgbG9jICAgPSB3aW4ubG9jYXRpb24sXG4gICAgICAgIGh0bWwgID0gZG9jLmRvY3VtZW50RWxlbWVudCxcbiAgICAgICAga2xhc3MgPSBbXSxcbiAgICAgICAgY29uZiAgPSB7XG4gICAgICAgICAgICB3aWR0aHMgICAgOiBbMjQwLCAzMjAsIDQ4MCwgNjQwLCA3NjgsIDgwMCwgMTAyNCwgMTI4MCwgMTM2NiwgMTQ0MCwgMTY4MCwgMTkyMF0sXG4gICAgICAgICAgICBoZWlnaHRzICAgOiBbMzIwLCA0ODAsIDYwMCwgNzY4LCA4MDAsIDkwMCwgMTA1MF0sXG4gICAgICAgICAgICB3aWR0aENzcyAgOiB7IFwiZ3RcIjogdHJ1ZSwgXCJsdFwiOiB0cnVlIH0sXG4gICAgICAgICAgICBoZWlnaHRDc3MgOiB7IFwiZ3RcIjogdHJ1ZSwgXCJsdFwiOiB0cnVlIH0sXG4gICAgICAgICAgICBicm93c2VycyAgOiB7XG4gICAgICAgICAgICAgICAgICAgICAgICAgIFwiaWVcIiAgICAgOiBbNywgMTFdXG4gICAgICAgICAgICAgICAgICAgICAgICAgLFwiZmZcIiAgICAgOiBbNCwgMjZdXG4gICAgICAgICAgICAgICAgICAgICAgICAgLy8sXCJjaHJvbWVcIiA6IFsyMywgMzNdXG4gICAgICAgICAgICAgICAgICAgICAgICAgLy8sXCJpb3NcIiAgICA6IFs0LCA3XVxuICAgICAgICAgICAgICAgICAgICAgICAgIC8vLFwiYW5kcm9pZFwiOiBbMiwgNF1cbiAgICAgICAgICAgICAgICAgICAgICAgICAvLyxcIndlYmtpdFwiIDogWzEwLCAxMl1cbiAgICAgICAgICAgICAgICAgICAgICAgICAvLyxcIm9wZXJhXCIgIDogWzEwLCAxMl1cbiAgICAgICAgICAgICAgICAgICAgICAgIH0sXG4gICAgICAgICAgICBicm93c2VyQ3NzOiB7IFwiZ3RcIjogdHJ1ZSwgXCJsdFwiOiB0cnVlIH0sXG4gICAgICAgICAgICBodG1sNSAgICAgOiB0cnVlLFxuICAgICAgICAgICAgaGFzaHRhZ3MgIDogdHJ1ZSxcbiAgICAgICAgICAgIHBhZ2UgICAgICA6IFwicGFnZVwiLFxuICAgICAgICAgICAgc2VjdGlvbiAgIDogXCJzZWN0aW9uXCIsXG4gICAgICAgICAgICBoYXNoICAgICAgOiBcImhhc2hcIixcbiAgICAgICAgICAgIGhlYWQgICAgICA6IFwiaGVhZFwiXG4gICAgICAgIH07XG5cbiAgICBpZiAod2luLmhlYWRfY29uZikge1xuICAgICAgICBmb3IgKHZhciBpdGVtIGluIHdpbi5oZWFkX2NvbmYpIHtcbiAgICAgICAgICAgIGlmICh3aW4uaGVhZF9jb25mW2l0ZW1dICE9PSB1bmRlZmluZWQpIHtcbiAgICAgICAgICAgICAgICBjb25mW2l0ZW1dID0gd2luLmhlYWRfY29uZltpdGVtXTtcbiAgICAgICAgICAgIH1cbiAgICAgICAgfVxuICAgIH1cblxuICAgIHZhciBoZWFkID0gY29uZi5oZWFkIHx8IFwiaGVhZFwiO1xuICAgIHZhciBhcGkgID0gd2luW2hlYWRdID0gKHdpbltoZWFkXSB8fCB7fSk7XG4gICAgLy8jZW5kcmVnaW9uXG5cbiAgICAvLyNyZWdpb24gRXhwZXJpbWVudGFsXG4gICAgLy8gSU5GTzogbm90IHN1cmUgaWYgdGhpcyBpcyBuZWVkZWRcbiAgICAvLyBJbiBhbnljYXNlIGl0IGFsbG93cyB5b3UgdG8gY3JlYXRlIG5hbWVzcGFjZXMgb24gdGhlIGZseSB3aXRob3V0IGRlY2xhcmluZyBhIGJ1bmNoIG9mIG11bHRpcGxlIG9iamVjdHNcbiAgICAvLyBtYWtlTmFtZVNwYWNlKFwiaGVhZC52aWV3cG9ydC5oZWlnaHRcIik7XG4gICAgZnVuY3Rpb24gbWFrZU5hbWVTcGFjZSgpIHtcbiAgICAgICAgdmFyIGEgPSBhcmd1bWVudHMsIG8gPSBhcGksIGosIGQsIGFyZztcbiAgICAgICAgLy8gQXJyYXkgY2FjaGluZyBwZXJmb3JtYW5jZTogaHR0cDovL2JvbnNhaWRlbi5naXRodWIuY29tL0phdmFTY3JpcHQtR2FyZGVuLyNhcnJheS5nZW5lcmFsXG4gICAgICAgIGZvciAodmFyIGkgPSAwLCBsID0gYS5sZW5ndGg7IGkgPCBsOyBpKyspIHtcbiAgICAgICAgICAgIG8gPSBhcGk7IC8vUmVzZXQgYmFzZSBvYmplY3QgcGVyIGFyZ3VtZW50IG9yIGl0IHdpbGwgZ2V0IHJldXNlZCBmcm9tIHRoZSBsYXN0XG4gICAgICAgICAgICBhcmcgPSBhW2ldO1xuICAgICAgICAgICAgaWYgKGFyZy5pbmRleE9mKFwiLlwiKSA+IC0xKSB7IC8vU2tpcCB0aGlzIGlmIG5vIFwiLlwiIGlzIHByZXNlbnRcbiAgICAgICAgICAgICAgICBkID0gYXJnLnNwbGl0KFwiLlwiKTtcbiAgICAgICAgICAgICAgICBmb3IgKGogPSAoZFswXSA9PT0gaGVhZCkgPyAxIDogMDsgaiA8IGQubGVuZ3RoOyBqKyspIHtcbiAgICAgICAgICAgICAgICAgICAgb1tkW2pdXSA9IG9bZFtqXV0gfHwge307XG4gICAgICAgICAgICAgICAgICAgIG8gPSBvW2Rbal1dO1xuICAgICAgICAgICAgICAgIH1cbiAgICAgICAgICAgIH0gZWxzZSB7XG4gICAgICAgICAgICAgICAgb1thcmddID0gb1thcmddIHx8IHt9O1xuICAgICAgICAgICAgICAgIG8gPSBvW2FyZ107IC8vUmVzZXQgYmFzZSBvYmplY3QgdG8gdGhlIG5ldyBvYmplY3Qgc28gaXQncyByZXR1cm5lZFxuICAgICAgICAgICAgfVxuICAgICAgICB9XG4gICAgICAgIHJldHVybiBvO1xuICAgIH1cblxuICAgIC8vIGdldCB0aGUgdmFsdWUgY2xvc2VzdCB0byBudW0gZnJvbSBhbiBhcnJheSBvZiBudW1iZXJzXG4gICAgLy8gdGhpcyBjYW4gYmUgdXNlZCBmb3IgZGV0ZXJtaW5pbmcgYSBoZWlnaHQvd2lkdGggYnJlYWtwb2ludFxuICAgIC8vIHN0aWxsLCBpcyBpdCB1c2VmdWxsIHRvIGRldGVybWluZSBleGFjdC9jbG9zZXN0IGJyZWFrcG9pbnQgd2hlbiB3ZSBhbHJlYWR5IGhhdmUgbHQvZ3RcbiAgICBmdW5jdGlvbiBjbG9zZXN0KG51bSwgYXJyTnVtKSB7XG4gICAgICAgIHZhciBjID0gbnVsbDtcblxuICAgICAgICBmb3IgKHZhciBpID0gMCwgbCA9IGFyck51bS5sZW5ndGg7IGkgPCBsOyBpKyspIHtcbiAgICAgICAgICAgIGlmIChjID09IG51bGwgfHwgTWF0aC5hYnMoYXJyTnVtW2ldIC0gbnVtKSA8IE1hdGguYWJzKGMgLSBudW0pKSB7XG4gICAgICAgICAgICAgICAgYyA9IGFyck51bVtpXTtcbiAgICAgICAgICAgIH1cbiAgICAgICAgfVxuXG4gICAgICAgIHJldHVybiBjO1xuICAgIH1cblxuICAgIC8vIE5FRURFRCA/XG4gICAgZnVuY3Rpb24gcHVzaChuYW1lLCB2YWx1ZSwgaXNDc3MpIHtcbiAgICAgICAgLy8gSU5GTzogdGhlIGlkZWEgaXMgdG8gYmUgYWJsZSB0byBwdXNoIGEgdmFsdWUgdG8gYSBzcGVjaWZpYyBuYW1lc3BhY2UgKGFwaS5icm93c2VyLCBhcGkudmlld3BvcnQsIC4uKVxuICAgICAgICAvLyB3ZSBuZWVkIGEgY2xlYW4gd2F5IHRvIHB1c2ggdmFsdWVzIHRvIENTUyBhcyB3ZWxsIGFzIHRvIEpTXG4gICAgICAgIC8vIHdlIGFsc28gbmVlZCB0byBiZSBhYmxlIHRvIGFkZCwgdXBkYXRlLCBhbmQgcmVtb3ZlIHRob3NlIHZhbHVlc1xuICAgICAgICAvLyAuLi5zdGlsbCBmaWd1cmluZyB0aGlzIG91dFxuXG4gICAgICAgIC8vIHB1c2goXCJoXCIsIGloLCBjc3MpO1xuICAgICAgICAvLyBwdXNoKGFwaS52aWV3cG9ydC5oZWlnaHQsIGloLCBqcyk7XG4gICAgICAgIC8vIHB1c2goXCJ2aWV3cG9ydFwiLCBcImhlaWdodFwiLCB2YWx1ZSk7XG5cbiAgICAgICAgYXBpW25hbWVdW2tleV0gPSB2YWx1ZTtcblxuICAgICAgICBpZiAoaXNDc3MpIHtcbiAgICAgICAgICAgIGtsYXNzW2tsYXNzLmxlbmd0aF0gPSBuYW1lLmNvbmNhdChcIi1cIiwgdmFsdWUpO1xuICAgICAgICB9IGVsc2Uge1xuICAgICAgICAgICAgbmFtZSA9IHZhbHVlO1xuICAgICAgICB9XG5cbiAgICAgICAgYXBpLnNldEZlYXR1cmUoKTtcbiAgICB9O1xuICAgIC8vI2VuZHJlZ2lvblxuXG4gICAgLy8jcmVnaW9uIEludGVybmFsIEZ1bmN0aW9uc1xuICAgIGZ1bmN0aW9uIGVhY2goYXJyLCBmbikge1xuICAgICAgICAvLyBBcnJheSBjYWNoaW5nIHBlcmZvcm1hbmNlOiBodHRwOi8vYm9uc2FpZGVuLmdpdGh1Yi5jb20vSmF2YVNjcmlwdC1HYXJkZW4vI2FycmF5LmdlbmVyYWxcbiAgICAgICAgZm9yICh2YXIgaSA9IDAsIGwgPSBhcnIubGVuZ3RoOyBpIDwgbDsgaSsrKSB7XG4gICAgICAgICAgICBmbi5jYWxsKGFyciwgYXJyW2ldLCBpKTtcbiAgICAgICAgfVxuICAgIH1cblxuICAgIGZ1bmN0aW9uIHB1c2hDbGFzcyhuYW1lKSB7XG4gICAgICAgIGtsYXNzW2tsYXNzLmxlbmd0aF0gPSBuYW1lO1xuICAgIH1cblxuICAgIGZ1bmN0aW9uIHJlbW92ZUNsYXNzKG5hbWUpIHtcbiAgICAgICAgLy8gbmVlZCB0byB0ZXN0IGZvciBib3RoIHNwYWNlIGFuZCBubyBzcGFjZVxuICAgICAgICAvLyBodHRwczovL2dpdGh1Yi5jb20vaGVhZGpzL2hlYWRqcy9pc3N1ZXMvMjcwXG4gICAgICAgIC8vIGh0dHBzOi8vZ2l0aHViLmNvbS9oZWFkanMvaGVhZGpzL2lzc3Vlcy8yMjZcbiAgICAgICAgdmFyIHJlID0gbmV3IFJlZ0V4cChcIiA/XFxcXGJcIiArIG5hbWUgKyBcIlxcXFxiXCIpO1xuICAgICAgICBodG1sLmNsYXNzTmFtZSA9IGh0bWwuY2xhc3NOYW1lLnJlcGxhY2UocmUsIFwiXCIpO1xuICAgIH1cbiAgICAvLyNlbmRyZWdpb25cblxuICAgIGFwaS5mZWF0dXJlcyA9IHt9O1xuICAgIGFwaS5zZXRGZWF0dXJlID0gZnVuY3Rpb24gKGtleSwgZW5hYmxlZCwgcXVldWUpIHtcbiAgICAgICAgLy8gaW50ZXJuYWw6IGFwcGx5IGFsbCBjbGFzc2VzXG4gICAgICAgIGlmICgha2V5KSB7XG4gICAgICAgICAgICBodG1sLmNsYXNzTmFtZSArPSBcIiBcIiArIGtsYXNzLmpvaW4oXCIgXCIpO1xuICAgICAgICAgICAga2xhc3MgPSBbXTtcblxuICAgICAgICAgICAgcmV0dXJuIGFwaTtcbiAgICAgICAgfVxuXG4gICAgICAgIGlmIChPYmplY3QucHJvdG90eXBlLnRvU3RyaW5nLmNhbGwoZW5hYmxlZCkgPT09IFwiW29iamVjdCBGdW5jdGlvbl1cIikge1xuICAgICAgICAgICAgZW5hYmxlZCA9IGVuYWJsZWQuY2FsbCgpO1xuICAgICAgICB9XG5cbiAgICAgICAgcHVzaENsYXNzKGtleSArIFwiLVwiICsgZW5hYmxlZCk7XG4gICAgICAgIGFwaS5mZWF0dXJlc1trZXldID0gISFlbmFibGVkO1xuXG4gICAgICAgIC8vIGFwcGx5IGNsYXNzIHRvIEhUTUwgZWxlbWVudFxuICAgICAgICBpZiAoIXF1ZXVlKSB7XG4gICAgICAgICAgICAvLyBkb24ndCByZWFsbHkgbGlrZSB0aGUgaWRlYSBvZiBkb2luZyAzIG9wZXJhdGlvbnMgaW4gYSByb3cgaGVyZVxuICAgICAgICAgICAgcmVtb3ZlQ2xhc3Moa2V5ICsgXCItdHJ1ZVwiKTtcbiAgICAgICAgICAgIHJlbW92ZUNsYXNzKGtleSArIFwiLWZhbHNlXCIpO1xuICAgICAgICAgICAgcmVtb3ZlQ2xhc3Moa2V5KTtcblxuICAgICAgICAgICAgYXBpLnNldEZlYXR1cmUoKTtcbiAgICAgICAgfVxuXG4gICAgICAgIHJldHVybiBhcGk7XG4gICAgfTtcblxuICAgIC8vI3JlZ2lvbiBRdWljayBGZWF0dXJlc1xuICAgIC8vIHdlIHN1cHBvcnQganMsIHdlIGdvdCBoZXJlICFcbiAgICBhcGkuc2V0RmVhdHVyZShcImpzXCIsIHRydWUsIHRydWUpO1xuXG4gICAgLy8gYnJvd3NlciB0eXBlICYgdmVyc2lvblxuICAgIHZhciB1YSAgICAgPSBuYXYudXNlckFnZW50LnRvTG93ZXJDYXNlKCksXG4gICAgICAgIG1vYmlsZSA9IC9tb2JpbGV8YW5kcm9pZHxraW5kbGV8c2lsa3xtaWRwfHBob25lfCh3aW5kb3dzIC4rYXJtfHRvdWNoKS8udGVzdCh1YSk7XG5cbiAgICAvLyB1c2VmdWwgZm9yIGVuYWJsaW5nL2Rpc2FibGluZyBmZWF0dXJlICh3ZSBjYW4gY29uc2lkZXIgYSBkZXNrdG9wIG5hdmlnYXRvciB0byBoYXZlIG1vcmUgY3B1L2dwdSBwb3dlcilcbiAgICBhcGkuc2V0RmVhdHVyZShcIm1vYmlsZVwiICwgbW9iaWxlICwgdHJ1ZSk7XG4gICAgYXBpLnNldEZlYXR1cmUoXCJkZXNrdG9wXCIsICFtb2JpbGUsIHRydWUpO1xuXG4gICAgLy8gYXJlIHdlIG9uIGEgdG91Y2ggZGV2aWNlID9cbiAgICBhcGkuc2V0RmVhdHVyZShcInRvdWNoXCIsIFwib250b3VjaHN0YXJ0XCIgaW4gd2luLCB0cnVlKTtcblxuICAgIC8vIHVzZWQgYnkgY3NzIHJvdXRlclxuICAgIGFwaS5zZXRGZWF0dXJlKFwiaGFzaGNoYW5nZVwiLCBcIm9uaGFzaGNoYW5nZVwiIGluIHdpbiwgdHJ1ZSk7XG4gICAgLy8jZW5kcmVnaW9uXG5cbiAgICAvLyNyZWdpb24gQnJvd3NlciBEZXRlY3Rpb25cbiAgICAvLyBodHRwOi8vd3d3Lnp5dHJheC5jb20vdGVjaC93ZWIvYnJvd3Nlcl9pZHMuaHRtXG4gICAgLy8gaHR0cDovL3d3dy56eXRyYXguY29tL3RlY2gvd2ViL21vYmlsZV9pZHMuaHRtbFxuICAgIHVhID0gLyhjaHJvbWV8ZmlyZWZveClbIFxcL10oW1xcdy5dKykvLmV4ZWModWEpIHx8IC8vIENocm9tZSAmIEZpcmVmb3hcbiAgICAgICAgIC8oaXBob25lfGlwYWR8aXBvZCkoPzouKnZlcnNpb24pP1sgXFwvXShbXFx3Ll0rKS8uZXhlYyh1YSkgfHwgLy8gTW9iaWxlIElPU1xuICAgICAgICAgLyhhbmRyb2lkKSg/Oi4qdmVyc2lvbik/WyBcXC9dKFtcXHcuXSspLy5leGVjKHVhKSB8fCAvLyBNb2JpbGUgV2Via2l0XG4gICAgICAgICAvKHdlYmtpdHxvcGVyYSkoPzouKnZlcnNpb24pP1sgXFwvXShbXFx3Ll0rKS8uZXhlYyh1YSkgfHwgLy8gU2FmYXJpICYgT3BlcmFcbiAgICAgICAgIC8obXNpZSkgKFtcXHcuXSspLy5leGVjKHVhKSB8fFxuICAgICAgICAgLyh0cmlkZW50KS4rcnY6KFxcdy4pKy8uZXhlYyh1YSkgfHwgW107XG5cbiAgICB2YXIgYnJvd3NlciA9IHVhWzFdLFxuICAgICAgICB2ZXJzaW9uID0gcGFyc2VGbG9hdCh1YVsyXSk7XG5cbiAgICBzd2l0Y2ggKGJyb3dzZXIpIHtcbiAgICBjYXNlIFwibXNpZVwiOlxuICAgIGNhc2UgXCJ0cmlkZW50XCI6XG4gICAgICAgIGJyb3dzZXIgPSBcImllXCI7XG4gICAgICAgICAgICB2ZXJzaW9uID0gZG9jLmRvY3VtZW50TW9kZSB8fCB2ZXJzaW9uO1xuICAgICAgICAgICAgYnJlYWs7XG5cbiAgICBjYXNlIFwiZmlyZWZveFwiOlxuICAgICAgICBicm93c2VyID0gXCJmZlwiO1xuICAgICAgICAgICAgYnJlYWs7XG5cbiAgICBjYXNlIFwiaXBvZFwiOlxuICAgIGNhc2UgXCJpcGFkXCI6XG4gICAgY2FzZSBcImlwaG9uZVwiOlxuICAgICAgICBicm93c2VyID0gXCJpb3NcIjtcbiAgICAgICAgICAgIGJyZWFrO1xuXG4gICAgY2FzZSBcIndlYmtpdFwiOlxuICAgICAgICBicm93c2VyID0gXCJzYWZhcmlcIjtcbiAgICAgICAgICAgIGJyZWFrO1xuICAgIH1cblxuICAgIC8vIEJyb3dzZXIgdmVuZG9yIGFuZCB2ZXJzaW9uXG4gICAgYXBpLmJyb3dzZXIgPSB7XG4gICAgICAgIG5hbWUgICA6IGJyb3dzZXIsXG4gICAgICAgIHZlcnNpb246IHZlcnNpb25cbiAgICB9O1xuICAgIGFwaS5icm93c2VyW2Jyb3dzZXJdID0gdHJ1ZTtcblxuICAgIGZvciAodmFyIGtleSBpbiBjb25mLmJyb3dzZXJzKSB7XG4gICAgICAgIGlmIChicm93c2VyID09PSBrZXkpIHtcbiAgICAgICAgICAgIC8vIGlzIHRoaXMgdXNlZnVsbCA/XG4gICAgICAgICAgICAvLyB3ZSBoYXZlIHRoZSBleGFjdCBicm93c2VyIHZlcnNpb24gYmVsb3dcbiAgICAgICAgICAgIC8vIGJ1dCB0aGlzIGFsc28gYXBwbGllcyB0byBvdGhlciBicm93c2Vycywgc28gd2UgY291bGQgaGF2ZSAuZmYgYW5kIC5pZS1mYWxzZVxuICAgICAgICAgICAgcHVzaENsYXNzKGtleSArIFwiLXRydWVcIik7XG5cbiAgICAgICAgICAgIC8vIEFycmF5IGNhY2hpbmcgcGVyZm9ybWFuY2U6IGh0dHA6Ly9ib25zYWlkZW4uZ2l0aHViLmNvbS9KYXZhU2NyaXB0LUdhcmRlbi8jYXJyYXkuZ2VuZXJhbFxuICAgICAgICAgICAgZm9yICh2YXIgaSA9IDAsIGwgPSBjb25mLmJyb3dzZXJzW2tleV0ubGVuZ3RoOyBpIDwgbDsgaSsrKSB7XG4gICAgICAgICAgICAgICAgdmFyIHN1cHBvcnRlZCA9IGNvbmYuYnJvd3NlcnNba2V5XVtpXTtcbiAgICAgICAgICAgICAgICBpZiAoY29uZi5icm93c2VyQ3NzLmd0ICYmICh2ZXJzaW9uID4gc3VwcG9ydGVkKSkge1xuICAgICAgICAgICAgICAgICAgICBwdXNoQ2xhc3Moa2V5ICsgXCItZ3RcIiArIHN1cHBvcnRlZCk7XG4gICAgICAgICAgICAgICAgfVxuXG4gICAgICAgICAgICAgICAgZWxzZSBpZiAoY29uZi5icm93c2VyQ3NzLmx0ICYmICh2ZXJzaW9uIDwgc3VwcG9ydGVkKSkge1xuICAgICAgICAgICAgICAgICAgICBwdXNoQ2xhc3Moa2V5ICsgXCItbHRcIiArIHN1cHBvcnRlZCk7XG4gICAgICAgICAgICAgICAgfVxuICAgICAgICAgICAgfVxuICAgICAgICB9XG5cbiAgICAgICAgZWxzZSB7XG4gICAgICAgICAgICAvLyBpcyB0aGlzIHVzZWZ1bGwgP1xuICAgICAgICAgICAgLy8gd2UgaGF2ZSB0aGUgZXhhY3QgYnJvd3NlciB2ZXJzaW9uIGJlbG93XG4gICAgICAgICAgICAvLyBidXQgdGhpcyBhbHNvIGFwcGxpZXMgdG8gb3RoZXIgYnJvd3NlcnMsIHNvIHdlIGNvdWxkIGhhdmUgLmllIGFuZCAuZmYtZmFsc2VcbiAgICAgICAgICAgIHB1c2hDbGFzcyhrZXkgKyBcIi1mYWxzZVwiKTtcbiAgICAgICAgfVxuICAgIH1cblxuICAgIHB1c2hDbGFzcyhicm93c2VyKTtcbiAgICBwdXNoQ2xhc3MoYnJvd3NlciArIHBhcnNlSW50KHZlcnNpb24sIDEwKSk7XG4gICAgLy8jZW5kcmVnaW9uXG5cbiAgICAvLyNyZWdpb24gSFRNTDUgU2hpbVxuICAgIGlmIChjb25mLmh0bWw1ICYmIGJyb3dzZXIgPT09IFwiaWVcIiAmJiB2ZXJzaW9uIDwgOSkge1xuICAgICAgICAvLyBIVE1MNSBzdXBwb3J0IDogeW91IHN0aWxsIG5lZWQgdG8gYWRkIGh0bWw1IGNzcyBpbml0aWFsaXphdGlvbiBzdHlsZXMgdG8geW91ciBzaXRlXG4gICAgICAgIC8vIFNlZTogL3NpdGUvYXNzZXRzL2Nzcy9odG1sNS5taW4uY3NzXG4gICAgICAgIGVhY2goXCJhYmJyfGFydGljbGV8YXNpZGV8YXVkaW98Y2FudmFzfGRldGFpbHN8ZmlnY2FwdGlvbnxmaWd1cmV8Zm9vdGVyfGhlYWRlcnxoZ3JvdXB8bWFpbnxtYXJrfG1ldGVyfG5hdnxvdXRwdXR8cHJvZ3Jlc3N8c2VjdGlvbnxzdW1tYXJ5fHRpbWV8dmlkZW9cIi5zcGxpdChcInxcIiksIGZ1bmN0aW9uIChlbCkge1xuICAgICAgICAgICAgZG9jLmNyZWF0ZUVsZW1lbnQoZWwpO1xuICAgICAgICB9KTtcbiAgICB9XG4gICAgLy8jZW5kcmVnaW9uXG5cbiAgICAvLyNyZWdpb24gQ1NTIFJvdXRlcjogUGFnZS9TZWN0aW9uXG4gICAgZnVuY3Rpb24gYnVpbGRSb3V0ZShwYXRoKSB7XG4gICAgICAgIC8vLyA8c3VtbWFyeT5jYW4gYmUgdXNlZCB0byBlbXVsYXRlIGhhc2hjaGFuZ2UgZXZlbnQgYnkgc3Vic2NyaWJpbmcgdG8gd2luL2RvYyBvbmNsaWNrIGFuZCB0ZXN0aW5nIGlmIHVybCBoYXMgY2hhbmdlZDwvc3VtbWFyeT5cbiAgICAgICAgdmFyIGl0ZW1zID0gbG9jLnBhdGhuYW1lLnNwbGl0KFwiL1wiKTtcblxuICAgICAgICBlYWNoKGl0ZW1zLCBmdW5jdGlvbiAoZWwsIGkpIHtcbiAgICAgICAgICAgIGlmICh0aGlzLmxlbmd0aCA+IDIgJiYgdGhpc1tpICsgMV0gIT09IHVuZGVmaW5lZCkge1xuICAgICAgICAgICAgICAgIGlmIChpKSB7XG4gICAgICAgICAgICAgICAgICAgIHB1c2hDbGFzcyhjb25mLnNlY3Rpb24gKyBcIi1cIiArIHRoaXMuc2xpY2UoaSwgaSArIDEpLmpvaW4oXCItXCIpLnRvTG93ZXJDYXNlKCkucmVwbGFjZSgvXFwuL2csIFwiLVwiKSk7XG4gICAgICAgICAgICAgICAgfVxuICAgICAgICAgICAgfSBlbHNlIHtcbiAgICAgICAgICAgICAgICAvLyBwYWdlSWRcbiAgICAgICAgICAgICAgICB2YXIgaWQgPSBlbCB8fCBcImluZGV4XCIsIGluZGV4ID0gaWQuaW5kZXhPZihcIi5cIik7XG4gICAgICAgICAgICAgICAgaWYgKGluZGV4ID4gMCkge1xuICAgICAgICAgICAgICAgICAgICBpZCA9IGlkLnN1YnN0cmluZygwLCBpbmRleCk7XG4gICAgICAgICAgICAgICAgfVxuXG4gICAgICAgICAgICAgICAgaHRtbC5pZCA9IGNvbmYucGFnZSArIFwiLVwiICsgaWQudG9Mb3dlckNhc2UoKTtcblxuICAgICAgICAgICAgICAgIC8vIG9uIHJvb3Q/XG4gICAgICAgICAgICAgICAgaWYgKCFpKSB7XG4gICAgICAgICAgICAgICAgICAgIHB1c2hDbGFzcyhjb25mLnNlY3Rpb24gKyBcIi1yb290XCIpO1xuICAgICAgICAgICAgICAgIH1cbiAgICAgICAgICAgIH1cbiAgICAgICAgfSk7XG4gICAgfVxuXG4gICAgYnVpbGRSb3V0ZShsb2MucGF0aG5hbWUpO1xuICAgIC8vI2VuZHJlZ2lvblxuXG4gICAgLy8jcmVnaW9uIENTUyBSb3V0ZXI6IEhhc0NoYW5nZVxuICAgIC8vIGNvbnRhaW5zIGN1cnJlbnQgaGFzaGVzLCBzbyB3ZSBjYW4gcmVtb3ZlIHRoZW0gd2hlbiBhIGNoYW5nZSBvY2N1cnNcbiAgICB2YXIgaGFzaENhY2hlID0gW107XG4gICAgZnVuY3Rpb24gb25oYXNoQ2hhbmdlKCkge1xuICAgICAgICAvLyByZW1vdmUgb2xkIHZhbHVlc1xuICAgICAgICBlYWNoKGhhc2hDYWNoZSwgZnVuY3Rpb24gKGVsKSB7XG4gICAgICAgICAgICByZW1vdmVDbGFzcyhlbCk7XG4gICAgICAgIH0pO1xuXG4gICAgICAgIC8vIGdldCBjdXJyZW50IGhhc2hcbiAgICAgICAgdmFyIGl0ZW1zID0gbG9jLmhhc2gucmVwbGFjZSgvKCF8IykvZywgXCJcIikuc3BsaXQoXCIvXCIpO1xuXG4gICAgICAgIC8vIGFkZCBuZXcgdmFsdWVzXG4gICAgICAgIGVhY2goaXRlbXMsIGZ1bmN0aW9uIChlbCkge1xuICAgICAgICAgICAgaWYgKCEhZWwpIHtcbiAgICAgICAgICAgICAgICB2YXIgbmFtZSA9IGNvbmYuaGFzaCArIFwiLVwiICsgZWwudG9Mb3dlckNhc2UoKS5yZXBsYWNlKC9cXC4vZywgXCItXCIpO1xuICAgICAgICAgICAgICAgIGhhc2hDYWNoZS5wdXNoKG5hbWUpO1xuICAgICAgICAgICAgICAgIHB1c2hDbGFzcyhuYW1lKTtcbiAgICAgICAgICAgIH1cbiAgICAgICAgfSk7XG5cbiAgICAgICAgLy8gY29tbWl0IGNoYW5nZXNcbiAgICAgICAgYXBpLnNldEZlYXR1cmUoKTtcbiAgICB9XG4gICAgLy8jZW5kcmVnaW9uXG5cbiAgICAvLyNyZWdpb24gU2NyZWVuIERldGVjdGlvblxuICAgIC8vIHNjcmVlbiBpbmZvcm1hdGlvbiBwbGFjZWhvbGRlclxuICAgIGFwaS5zY3JlZW4gPSB7fTtcblxuICAgIC8vIHZpZXdwb3J0IGluZm9ybWF0aW9uIHBsYWNlaG9sZGVyXG4gICAgYXBpLnZpZXdwb3J0ID0ge307XG5cbiAgICAvLyB2aWV3cG9ydCByZXNvbHV0aW9uczogdy0xMDAsIGx0LTQ4MCwgbHQtMTAyNCAuLi5cbiAgICBmdW5jdGlvbiBzY3JlZW5TaXplKCkge1xuICAgICAgICAvLyByZW1vdmUgZWFybGllciBzaXplc1xuICAgICAgICBodG1sLmNsYXNzTmFtZSA9IGh0bWwuY2xhc3NOYW1lLnJlcGxhY2UoLyAody18dy1ndHx3LWx0fGgtfGgtZ3R8aC1sdClcXGQrL2csIFwiXCIpO1xuXG4gICAgICAgIC8vIFZpZXdwb3J0IHdpZHRoXG4gICAgICAgIHZhciBpdyA9IHdpbi5pbm5lcldpZHRoIHx8IGh0bWwuY2xpZW50V2lkdGgsXG4gICAgICAgICAgICBvdyA9IHdpbi5vdXRlcldpZHRoIHx8IHdpbi5zY3JlZW4ud2lkdGg7XG5cbiAgICAgICAgYXBpLnZpZXdwb3J0LndpZHRoID0gaXc7XG4gICAgICAgIGFwaS5icm93c2VyLndpZHRoICA9IG93O1xuXG4gICAgICAgIC8vIElORk86IFNlZSBjb21tZW50IG9uIGZ1bmN0aW9uIGNsb3Nlc3QoKVxuICAgICAgICAvL3B1c2hDbGFzcyhcInctXCIgKyBpdyk7XG4gICAgICAgIHB1c2hDbGFzcyhcInctXCIgKyBjbG9zZXN0KGl3LCBjb25mLndpZHRocykpO1xuXG4gICAgICAgIGVhY2goY29uZi53aWR0aHMsIGZ1bmN0aW9uICh3aWR0aCkge1xuICAgICAgICAgICAgaWYgKGNvbmYud2lkdGhDc3MuZ3QgJiYgKGl3ID4gd2lkdGgpKSB7XG4gICAgICAgICAgICAgICAgcHVzaENsYXNzKFwidy1ndFwiICsgd2lkdGgpO1xuICAgICAgICAgICAgfVxuXG4gICAgICAgICAgICBlbHNlIGlmIChjb25mLndpZHRoQ3NzLmx0ICYmIChpdyA8IHdpZHRoKSkge1xuICAgICAgICAgICAgICAgIHB1c2hDbGFzcyhcInctbHRcIiArIHdpZHRoKTtcbiAgICAgICAgICAgIH1cbiAgICAgICAgfSk7XG5cbiAgICAgICAgLy8gVmlld3BvcnQgaGVpZ2h0XG4gICAgICAgIHZhciBpaCA9IHdpbi5pbm5lckhlaWdodCB8fCBodG1sLmNsaWVudEhlaWdodCxcbiAgICAgICAgICAgIG9oID0gd2luLm91dGVySGVpZ2h0IHx8IHdpbi5zY3JlZW4uaGVpZ2h0O1xuXG4gICAgICAgIGFwaS52aWV3cG9ydC5oZWlnaHQgPSBpaDtcbiAgICAgICAgYXBpLmJyb3dzZXIuaGVpZ2h0ICA9IG9oO1xuXG4gICAgICAgIC8vIElORk86IFNlZSBjb21tZW50IG9uIGZ1bmN0aW9uIGNsb3Nlc3QoKVxuICAgICAgICAvL3B1c2hDbGFzcyhcImgtXCIgKyBpaCk7XG4gICAgICAgIHB1c2hDbGFzcyhcImgtXCIgKyBjbG9zZXN0KGloLCBjb25mLmhlaWdodHMpKTtcblxuICAgICAgICBlYWNoKGNvbmYuaGVpZ2h0cywgZnVuY3Rpb24gKGhlaWdodCkge1xuICAgICAgICAgICAgaWYgKGNvbmYuaGVpZ2h0Q3NzLmd0ICYmIChpaCA+IGhlaWdodCkpIHtcbiAgICAgICAgICAgICAgICBwdXNoQ2xhc3MoXCJoLWd0XCIgKyBoZWlnaHQpO1xuICAgICAgICAgICAgfVxuXG4gICAgICAgICAgICBlbHNlIGlmIChjb25mLmhlaWdodENzcy5sdCAmJiAoaWggPCBoZWlnaHQpKSB7XG4gICAgICAgICAgICAgICAgcHVzaENsYXNzKFwiaC1sdFwiICsgaGVpZ2h0KTtcbiAgICAgICAgICAgIH1cbiAgICAgICAgfSk7XG5cbiAgICAgICAgLy8gSU5GTzogbWF5YmUgd2Ugc2hvdWxkIGRldGVjdCBhbmQgdGFrZSB0aGUgYXNwZWN0IHJhdGlvIGludG8gYWNjb3VudCB0b28gP1xuICAgICAgICAvLyBBIGRlc2t0b3AgYnJvd3NlciB3aG9zZSB3aW5kb3cgY2FuIGJlIHJlc2l6ZWQsIG1pZ2h0IGdpdmUgd2VpcmQgcmVzdWx0cyAob24gYSByZXNwb25zaXZlIHNpdGUpIGlmIGl0IHJlcG9ydHMgcG9ydHJhaXQgbW9kZSwgd2hlbiBpbiByZWFsaXR5IGl0J3MganVzdCBhIGZldyBwaXhlbHMgbGVzcyB0aGFuIGxhbmRzY2FwZVxuICAgICAgICAvLyBGb3IgZXhhbXBsZTpcbiAgICAgICAgLy8gRGV0ZWN0IGJhc2VkIG9uIFJhdGlvLiAwLjgtMC45IHNlZW0gbGlrZSBhIGdvb2QgdGhyZXNoaG9sZCBjb21wcm9taXNlLCBldmVuIGlmIGluIHJlYWxpdHkgMC45OSBjYW4gYmUgY29uc2lkZXJlZCBhcyBwb3J0cmFpdCB0b28uXG4gICAgICAgIC8vIENvbW1vbiBtb2JpbGUgcmF0aW9zIGFyZTogMC41NjogNzIweDEyODAsIDAuNjogNDgweDgwMCwgMC42NjogMzIweDQ4MCA2NDB4OTYwLCAwLjc1OiA2MDB4ODAwIDc2OHgxMDI0XG4gICAgICAgIC8vIEdhbGF4eSBTIDEvMiA0ODB4ODAwIDMgNzIweDEyODAsIElQaG9uZSA0LzRTIDY0MO+/vTk2MCwgSVBob25lIDUgNjQw77+9MTEzNiAuLnNlZW1zIGxpa2UgNDgwIGlzIGEgZ29vZCB0YXJnZXRcbiAgICAgICAgLy8gdmFyIHBvcnRyYWl0ICA9ICgoaXcgLyBpaCkgPD0gMC44NSk7XG4gICAgICAgIC8vIHZhciBsYW5kc2NhcGUgPSAhcG9ydHJhaXQ7XG4gICAgICAgIGFwaS5zZXRGZWF0dXJlKFwicG9ydHJhaXRcIiAsIChpaCA+IGl3KSk7XG4gICAgICAgIGFwaS5zZXRGZWF0dXJlKFwibGFuZHNjYXBlXCIsIChpaCA8IGl3KSk7XG4gICAgfVxuXG4gICAgc2NyZWVuU2l6ZSgpO1xuICAgIC8vYXBpLnNldEZlYXR1cmUoKTtcblxuICAgIC8vIFRocm90dGxlIG5hdmlnYXRvcnMgZnJvbSB0cmlnZ2VyaW5nIHRvbyBtYW55IHJlc2l6ZSBldmVudHNcbiAgICB2YXIgcmVzaXplSWQgPSAwO1xuICAgIGZ1bmN0aW9uIG9uUmVzaXplKCkge1xuICAgICAgICB3aW4uY2xlYXJUaW1lb3V0KHJlc2l6ZUlkKTtcbiAgICAgICAgcmVzaXplSWQgPSB3aW4uc2V0VGltZW91dChzY3JlZW5TaXplLCA1MCk7XG4gICAgfVxuICAgIC8vI2VuZHJlZ2lvblxuXG5cbiAgICAvLyNyZWdpb24gRXZlbnRIYW5kbGVyc1xuICAgIC8vIE1hbnVhbGx5IGF0dGFjaCwgYXMgdG8gbm90IG92ZXJ3cml0ZSBleGlzdGluZyBoYW5kbGVyXG4gICAgaWYgKHdpbi5hZGRFdmVudExpc3RlbmVyKSB7XG4gICAgICAgIGlmIChjb25mLmhhc2h0YWdzICYmIGFwaS5mZWF0dXJlcy5oYXNoY2hhbmdlKSB7XG4gICAgICAgICAgICB3aW4uYWRkRXZlbnRMaXN0ZW5lcihcImhhc2hjaGFuZ2VcIiwgb25oYXNoQ2hhbmdlLCBmYWxzZSk7XG5cbiAgICAgICAgICAgIC8vIGZpcnN0IGxvYWRcbiAgICAgICAgICAgIG9uaGFzaENoYW5nZSgpO1xuICAgICAgICB9XG5cbiAgICAgICAgd2luLmFkZEV2ZW50TGlzdGVuZXIoXCJyZXNpemVcIiwgb25SZXNpemUsIGZhbHNlKTtcblxuICAgIH0gZWxzZSB7XG4gICAgICAgIC8vIElFOCBhbmQgbGVzc1xuICAgICAgICBpZiAoY29uZi5oYXNodGFncyAmJiBhcGkuZmVhdHVyZXMuaGFzaGNoYW5nZSkge1xuICAgICAgICAgICAgd2luLmF0dGFjaEV2ZW50KFwib25oYXNoY2hhbmdlXCIsIG9uaGFzaENoYW5nZSk7XG5cbiAgICAgICAgICAgIC8vIGZpcnN0IGxvYWRcbiAgICAgICAgICAgIG9uaGFzaENoYW5nZSgpO1xuICAgICAgICB9XG5cbiAgICAgICAgd2luLmF0dGFjaEV2ZW50KFwib25yZXNpemVcIiwgb25SZXNpemUpO1xuICAgIH1cbiAgICAvLyNlbmRyZWdpb25cblxuICAgIC8vI3JlZ2lvbiBQdWJsaWMgRXhwb3J0c1xuICAgIC8vIHdlIHNob3VsZCBwcm9iYWJseSBzdG9wIGRlY2xhcmluZyBwdWJsaWMgc3R1ZmYgYWJvdmUgYW5kIG1ha2UgYSBcImV4cG9ydHNcIiBzZWN0aW9uIGhlcmVcbiAgICAvLyNlbmRyZWdpb25cbn0od2luZG93KSk7XG4iXSwic291cmNlUm9vdCI6IiJ9\n//# sourceURL=webpack-internal:///./src/js/modules/head.js\n");
+/*! head.responsive - v2.0.0-alpha */
+
+/*
+ * HeadJS     The only script in your <HEAD>
+ * Author     Tero Piirainen  (tipiirai)
+ * Maintainer Robert Hoffmann (itechnology)
+ * License    MIT / http://bit.ly/mit-license
+ * WebSite    http://headjs.com
+ */
+
+/* Feature List
+ *
+ * HashChange handling
+ * lt/gt handling for browser versions, viewport width, and viewport height
+ * Event handling: head.on(), based on MinPubSub
+ * Make as many variables as possible availiable in css AND js
+ * Detect phone, tablet, mobile, desktop
+ * We could detect phone/tablet by measuring the aspect ratio of the screen resolution (not viewport) and making sure it's .mobile-true
+ * Move all features to api.features[]
+ * Make groups: api.viewport, api.screen, api.browser, api.features, api.page, api.section[], api.hash[]
+ * Maybe move api.features.landscape/portrait to api.viewport ..it is more related to that than an actual feature
+ * Maybe move api.features.mobile/desktop/touch to api.browser ..it is more related to that than an actual feature
+ * We no longer declare min/max versions of browsers (too many out there), instead each version we wish to generate lt/gt for
+ * Someone proposed to add operating system detection: window, linux, ios, mac, etc ..i'm doubtful to being able to detect that consistently with a minimal amount of regexp
+ */
+(function (win, undefined) {
+  "use strict"; //#region Variables
+
+  var doc = win.document,
+      nav = win.navigator,
+      loc = win.location,
+      html = doc.documentElement,
+      klass = [],
+      conf = {
+    widths: [240, 320, 480, 640, 768, 800, 1024, 1280, 1366, 1440, 1680, 1920],
+    heights: [320, 480, 600, 768, 800, 900, 1050],
+    widthCss: {
+      "gt": true,
+      "lt": true
+    },
+    heightCss: {
+      "gt": true,
+      "lt": true
+    },
+    browsers: {
+      "ie": [7, 11],
+      "ff": [4, 26] //,"chrome" : [23, 33]
+      //,"ios"    : [4, 7]
+      //,"android": [2, 4]
+      //,"webkit" : [10, 12]
+      //,"opera"  : [10, 12]
+
+    },
+    browserCss: {
+      "gt": true,
+      "lt": true
+    },
+    html5: true,
+    hashtags: true,
+    page: "page",
+    section: "section",
+    hash: "hash",
+    head: "head"
+  };
+
+  if (win.head_conf) {
+    for (var item in win.head_conf) {
+      if (win.head_conf[item] !== undefined) {
+        conf[item] = win.head_conf[item];
+      }
+    }
+  }
+
+  var head = conf.head || "head";
+  var api = win[head] = win[head] || {}; //#endregion
+  //#region Experimental
+  // INFO: not sure if this is needed
+  // In anycase it allows you to create namespaces on the fly without declaring a bunch of multiple objects
+  // makeNameSpace("head.viewport.height");
+
+  function makeNameSpace() {
+    var a = arguments,
+        o = api,
+        j,
+        d,
+        arg; // Array caching performance: http://bonsaiden.github.com/JavaScript-Garden/#array.general
+
+    for (var i = 0, l = a.length; i < l; i++) {
+      o = api; //Reset base object per argument or it will get reused from the last
+
+      arg = a[i];
+
+      if (arg.indexOf(".") > -1) {
+        //Skip this if no "." is present
+        d = arg.split(".");
+
+        for (j = d[0] === head ? 1 : 0; j < d.length; j++) {
+          o[d[j]] = o[d[j]] || {};
+          o = o[d[j]];
+        }
+      } else {
+        o[arg] = o[arg] || {};
+        o = o[arg]; //Reset base object to the new object so it's returned
+      }
+    }
+
+    return o;
+  } // get the value closest to num from an array of numbers
+  // this can be used for determining a height/width breakpoint
+  // still, is it usefull to determine exact/closest breakpoint when we already have lt/gt
+
+
+  function closest(num, arrNum) {
+    var c = null;
+
+    for (var i = 0, l = arrNum.length; i < l; i++) {
+      if (c == null || Math.abs(arrNum[i] - num) < Math.abs(c - num)) {
+        c = arrNum[i];
+      }
+    }
+
+    return c;
+  } // NEEDED ?
+
+
+  function push(name, value, isCss) {
+    // INFO: the idea is to be able to push a value to a specific namespace (api.browser, api.viewport, ..)
+    // we need a clean way to push values to CSS as well as to JS
+    // we also need to be able to add, update, and remove those values
+    // ...still figuring this out
+    // push("h", ih, css);
+    // push(api.viewport.height, ih, js);
+    // push("viewport", "height", value);
+    api[name][key] = value;
+
+    if (isCss) {
+      klass[klass.length] = name.concat("-", value);
+    } else {
+      name = value;
+    }
+
+    api.setFeature();
+  }
+
+  ; //#endregion
+  //#region Internal Functions
+
+  function each(arr, fn) {
+    // Array caching performance: http://bonsaiden.github.com/JavaScript-Garden/#array.general
+    for (var i = 0, l = arr.length; i < l; i++) {
+      fn.call(arr, arr[i], i);
+    }
+  }
+
+  function pushClass(name) {
+    klass[klass.length] = name;
+  }
+
+  function removeClass(name) {
+    // need to test for both space and no space
+    // https://github.com/headjs/headjs/issues/270
+    // https://github.com/headjs/headjs/issues/226
+    var re = new RegExp(" ?\\b" + name + "\\b");
+    html.className = html.className.replace(re, "");
+  } //#endregion
+
+
+  api.features = {};
+
+  api.setFeature = function (key, enabled, queue) {
+    // internal: apply all classes
+    if (!key) {
+      html.className += " " + klass.join(" ");
+      klass = [];
+      return api;
+    }
+
+    if (Object.prototype.toString.call(enabled) === "[object Function]") {
+      enabled = enabled.call();
+    }
+
+    pushClass(key + "-" + enabled);
+    api.features[key] = !!enabled; // apply class to HTML element
+
+    if (!queue) {
+      // don't really like the idea of doing 3 operations in a row here
+      removeClass(key + "-true");
+      removeClass(key + "-false");
+      removeClass(key);
+      api.setFeature();
+    }
+
+    return api;
+  }; //#region Quick Features
+  // we support js, we got here !
+
+
+  api.setFeature("js", true, true); // browser type & version
+
+  var ua = nav.userAgent.toLowerCase(),
+      mobile = /mobile|android|kindle|silk|midp|phone|(windows .+arm|touch)/.test(ua); // useful for enabling/disabling feature (we can consider a desktop navigator to have more cpu/gpu power)
+
+  api.setFeature("mobile", mobile, true);
+  api.setFeature("desktop", !mobile, true); // are we on a touch device ?
+
+  api.setFeature("touch", "ontouchstart" in win, true); // used by css router
+
+  api.setFeature("hashchange", "onhashchange" in win, true); //#endregion
+  //#region Browser Detection
+  // http://www.zytrax.com/tech/web/browser_ids.htm
+  // http://www.zytrax.com/tech/web/mobile_ids.html
+
+  ua = /(chrome|firefox)[ \/]([\w.]+)/.exec(ua) || // Chrome & Firefox
+  /(iphone|ipad|ipod)(?:.*version)?[ \/]([\w.]+)/.exec(ua) || // Mobile IOS
+  /(android)(?:.*version)?[ \/]([\w.]+)/.exec(ua) || // Mobile Webkit
+  /(webkit|opera)(?:.*version)?[ \/]([\w.]+)/.exec(ua) || // Safari & Opera
+  /(msie) ([\w.]+)/.exec(ua) || /(trident).+rv:(\w.)+/.exec(ua) || [];
+  var browser = ua[1],
+      version = parseFloat(ua[2]);
+
+  switch (browser) {
+    case "msie":
+    case "trident":
+      browser = "ie";
+      version = doc.documentMode || version;
+      break;
+
+    case "firefox":
+      browser = "ff";
+      break;
+
+    case "ipod":
+    case "ipad":
+    case "iphone":
+      browser = "ios";
+      break;
+
+    case "webkit":
+      browser = "safari";
+      break;
+  } // Browser vendor and version
+
+
+  api.browser = {
+    name: browser,
+    version: version
+  };
+  api.browser[browser] = true;
+
+  for (var key in conf.browsers) {
+    if (browser === key) {
+      // is this usefull ?
+      // we have the exact browser version below
+      // but this also applies to other browsers, so we could have .ff and .ie-false
+      pushClass(key + "-true"); // Array caching performance: http://bonsaiden.github.com/JavaScript-Garden/#array.general
+
+      for (var i = 0, l = conf.browsers[key].length; i < l; i++) {
+        var supported = conf.browsers[key][i];
+
+        if (conf.browserCss.gt && version > supported) {
+          pushClass(key + "-gt" + supported);
+        } else if (conf.browserCss.lt && version < supported) {
+          pushClass(key + "-lt" + supported);
+        }
+      }
+    } else {
+      // is this usefull ?
+      // we have the exact browser version below
+      // but this also applies to other browsers, so we could have .ie and .ff-false
+      pushClass(key + "-false");
+    }
+  }
+
+  pushClass(browser);
+  pushClass(browser + parseInt(version, 10)); //#endregion
+  //#region HTML5 Shim
+
+  if (conf.html5 && browser === "ie" && version < 9) {
+    // HTML5 support : you still need to add html5 css initialization styles to your site
+    // See: /site/assets/css/html5.min.css
+    each("abbr|article|aside|audio|canvas|details|figcaption|figure|footer|header|hgroup|main|mark|meter|nav|output|progress|section|summary|time|video".split("|"), function (el) {
+      doc.createElement(el);
+    });
+  } //#endregion
+  //#region CSS Router: Page/Section
+
+
+  function buildRoute(path) {
+    /// <summary>can be used to emulate hashchange event by subscribing to win/doc onclick and testing if url has changed</summary>
+    var items = loc.pathname.split("/");
+    each(items, function (el, i) {
+      if (this.length > 2 && this[i + 1] !== undefined) {
+        if (i) {
+          pushClass(conf.section + "-" + this.slice(i, i + 1).join("-").toLowerCase().replace(/\./g, "-"));
+        }
+      } else {
+        // pageId
+        var id = el || "index",
+            index = id.indexOf(".");
+
+        if (index > 0) {
+          id = id.substring(0, index);
+        }
+
+        html.id = conf.page + "-" + id.toLowerCase(); // on root?
+
+        if (!i) {
+          pushClass(conf.section + "-root");
+        }
+      }
+    });
+  }
+
+  buildRoute(loc.pathname); //#endregion
+  //#region CSS Router: HasChange
+  // contains current hashes, so we can remove them when a change occurs
+
+  var hashCache = [];
+
+  function onhashChange() {
+    // remove old values
+    each(hashCache, function (el) {
+      removeClass(el);
+    }); // get current hash
+
+    var items = loc.hash.replace(/(!|#)/g, "").split("/"); // add new values
+
+    each(items, function (el) {
+      if (!!el) {
+        var name = conf.hash + "-" + el.toLowerCase().replace(/\./g, "-");
+        hashCache.push(name);
+        pushClass(name);
+      }
+    }); // commit changes
+
+    api.setFeature();
+  } //#endregion
+  //#region Screen Detection
+  // screen information placeholder
+
+
+  api.screen = {}; // viewport information placeholder
+
+  api.viewport = {}; // viewport resolutions: w-100, lt-480, lt-1024 ...
+
+  function screenSize() {
+    // remove earlier sizes
+    html.className = html.className.replace(/ (w-|w-gt|w-lt|h-|h-gt|h-lt)\d+/g, ""); // Viewport width
+
+    var iw = win.innerWidth || html.clientWidth,
+        ow = win.outerWidth || win.screen.width;
+    api.viewport.width = iw;
+    api.browser.width = ow; // INFO: See comment on function closest()
+    //pushClass("w-" + iw);
+
+    pushClass("w-" + closest(iw, conf.widths));
+    each(conf.widths, function (width) {
+      if (conf.widthCss.gt && iw > width) {
+        pushClass("w-gt" + width);
+      } else if (conf.widthCss.lt && iw < width) {
+        pushClass("w-lt" + width);
+      }
+    }); // Viewport height
+
+    var ih = win.innerHeight || html.clientHeight,
+        oh = win.outerHeight || win.screen.height;
+    api.viewport.height = ih;
+    api.browser.height = oh; // INFO: See comment on function closest()
+    //pushClass("h-" + ih);
+
+    pushClass("h-" + closest(ih, conf.heights));
+    each(conf.heights, function (height) {
+      if (conf.heightCss.gt && ih > height) {
+        pushClass("h-gt" + height);
+      } else if (conf.heightCss.lt && ih < height) {
+        pushClass("h-lt" + height);
+      }
+    }); // INFO: maybe we should detect and take the aspect ratio into account too ?
+    // A desktop browser whose window can be resized, might give weird results (on a responsive site) if it reports portrait mode, when in reality it's just a few pixels less than landscape
+    // For example:
+    // Detect based on Ratio. 0.8-0.9 seem like a good threshhold compromise, even if in reality 0.99 can be considered as portrait too.
+    // Common mobile ratios are: 0.56: 720x1280, 0.6: 480x800, 0.66: 320x480 640x960, 0.75: 600x800 768x1024
+    // Galaxy S 1/2 480x800 3 720x1280, IPhone 4/4S 640�960, IPhone 5 640�1136 ..seems like 480 is a good target
+    // var portrait  = ((iw / ih) <= 0.85);
+    // var landscape = !portrait;
+
+    api.setFeature("portrait", ih > iw);
+    api.setFeature("landscape", ih < iw);
+  }
+
+  screenSize(); //api.setFeature();
+  // Throttle navigators from triggering too many resize events
+
+  var resizeId = 0;
+
+  function onResize() {
+    win.clearTimeout(resizeId);
+    resizeId = win.setTimeout(screenSize, 50);
+  } //#endregion
+  //#region EventHandlers
+  // Manually attach, as to not overwrite existing handler
+
+
+  if (win.addEventListener) {
+    if (conf.hashtags && api.features.hashchange) {
+      win.addEventListener("hashchange", onhashChange, false); // first load
+
+      onhashChange();
+    }
+
+    win.addEventListener("resize", onResize, false);
+  } else {
+    // IE8 and less
+    if (conf.hashtags && api.features.hashchange) {
+      win.attachEvent("onhashchange", onhashChange); // first load
+
+      onhashChange();
+    }
+
+    win.attachEvent("onresize", onResize);
+  } //#endregion
+  //#region Public Exports
+  // we should probably stop declaring public stuff above and make a "exports" section here
+  //#endregion
+
+})(window);
 
 /***/ }),
 
@@ -104,7 +529,18 @@ eval("/*! head.responsive - v2.0.0-alpha */\n\n/*\n * HeadJS     The only script
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-eval("// ======================================================================\n// Forge Lite | hello@hashandsalt.com\n// ======================================================================\n// window.$ = window.jQuery = require('jquery');\n// ======================================================================\n// Modules\n// ======================================================================\n// require any further scripts here ie:\n// require('npmpackagename');\n// require('./mylocalfile.js');\n// head.js\n__webpack_require__(/*! ./modules/head.js */ \"./src/js/modules/head.js\");//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIndlYnBhY2s6Ly8vLi9zcmMvanMvc2l0ZS5qcz8yOGYwIl0sIm5hbWVzIjpbInJlcXVpcmUiXSwibWFwcGluZ3MiOiJBQUFBO0FBQ0E7QUFDQTtBQUVBO0FBRUE7QUFDQTtBQUNBO0FBRUE7QUFDQTtBQUNBO0FBRUE7QUFDQUEsbUJBQU8sQ0FBQyxtREFBRCxDQUFQIiwiZmlsZSI6Ii4vc3JjL2pzL3NpdGUuanMuanMiLCJzb3VyY2VzQ29udGVudCI6WyIvLyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09XG4vLyBGb3JnZSBMaXRlIHwgaGVsbG9AaGFzaGFuZHNhbHQuY29tXG4vLyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09XG5cbi8vIHdpbmRvdy4kID0gd2luZG93LmpRdWVyeSA9IHJlcXVpcmUoJ2pxdWVyeScpO1xuXG4vLyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09XG4vLyBNb2R1bGVzXG4vLyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09XG5cbi8vIHJlcXVpcmUgYW55IGZ1cnRoZXIgc2NyaXB0cyBoZXJlIGllOlxuLy8gcmVxdWlyZSgnbnBtcGFja2FnZW5hbWUnKTtcbi8vIHJlcXVpcmUoJy4vbXlsb2NhbGZpbGUuanMnKTtcblxuLy8gaGVhZC5qc1xucmVxdWlyZSgnLi9tb2R1bGVzL2hlYWQuanMnKTtcbiJdLCJzb3VyY2VSb290IjoiIn0=\n//# sourceURL=webpack-internal:///./src/js/site.js\n");
+// ======================================================================
+// Forge Lite | hello@hashandsalt.com
+// ======================================================================
+// window.$ = window.jQuery = require('jquery');
+// ======================================================================
+// Modules
+// ======================================================================
+// require any further scripts here ie:
+// require('npmpackagename');
+// require('./mylocalfile.js');
+// head.js
+__webpack_require__(/*! ./modules/head.js */ "./src/js/modules/head.js");
 
 /***/ }),
 
@@ -115,7 +551,7 @@ eval("// ======================================================================\
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-eval("// removed by extract-text-webpack-plugin//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIndlYnBhY2s6Ly8vLi9zcmMvc2Fzcy9zaXRlLnNjc3M/OGU1YyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFBQSIsImZpbGUiOiIuL3NyYy9zYXNzL3NpdGUuc2Nzcy5qcyIsInNvdXJjZXNDb250ZW50IjpbIi8vIHJlbW92ZWQgYnkgZXh0cmFjdC10ZXh0LXdlYnBhY2stcGx1Z2luIl0sInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///./src/sass/site.scss\n");
+// removed by extract-text-webpack-plugin
 
 /***/ }),
 
@@ -126,10 +562,11 @@ eval("// removed by extract-text-webpack-plugin//# sourceURL=[module]\n//# sourc
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(/*! /Volumes/Server/Clients/Hash&Salt/hashandsalt2020/src/js/site.js */"./src/js/site.js");
-module.exports = __webpack_require__(/*! /Volumes/Server/Clients/Hash&Salt/hashandsalt2020/src/sass/site.scss */"./src/sass/site.scss");
+__webpack_require__(/*! /Volumes/Server/ForgeLite/src/js/site.js */"./src/js/site.js");
+module.exports = __webpack_require__(/*! /Volumes/Server/ForgeLite/src/sass/site.scss */"./src/sass/site.scss");
 
 
 /***/ })
 
 /******/ });
+//# sourceMappingURL=site.js.map

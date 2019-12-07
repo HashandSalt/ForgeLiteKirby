@@ -34,6 +34,7 @@ mix.browserSync({
 // Javascript
 // ======================================================================
 mix.js('src/js/site.js', 'public/assets/js');
+mix.js('src/js/ga.js', 'public/assets/js');
 
 // SASS
 // ======================================================================
@@ -75,6 +76,7 @@ mix.options({
 // Custom Webpack Config
 // ======================================================================
 mix.webpackConfig({
+  devtool: 'source-map', // Temporary fix due to a bug in Laraval Mix
   plugins: [
 
 

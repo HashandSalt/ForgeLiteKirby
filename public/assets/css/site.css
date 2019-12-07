@@ -582,38 +582,34 @@ img {
   box-sizing: content-box;
   text-decoration: none;
   cursor: pointer;
-  color: #3c3c3c;
   background: #96def0;
   border-width: 2px 2px 2px 2px;
   border-style: solid;
   border-color: #9f9f9f;
 }
 .btn:hover {
-  color: #3c3c3c;
   background: #53c9e6;
   border-width: 2px 2px 2px 2px;
   border-style: solid;
   border-color: #3c3c3c;
 }
 .btn:focus {
-  color: #3c3c3c;
   background: #3dc2e3;
   border-width: 2px 2px 2px 2px;
   border-style: solid;
   border-color: #3c3c3c;
 }
 .btn:active {
-  color: #3c3c3c;
   background: #69d0ea;
   border-width: 2px 2px 2px 2px;
   border-style: solid;
+  border-color: #3c3c3c;
 }
 .btn:disabled {
-  color: #3c3c3c;
-  background: #adadad;
+  background: #69d0ea;
   border-width: 2px 2px 2px 2px;
   border-style: solid;
-  border-color: #7a7a7a;
+  border-color: #3c3c3c;
 }
 
 .table {
@@ -688,3 +684,4 @@ img {
   display: table;
   clear: both;
 }
+/*# sourceMappingURL=site.css.map*/
