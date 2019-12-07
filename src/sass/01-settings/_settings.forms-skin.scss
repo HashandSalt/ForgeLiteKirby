@@ -1,0 +1,126 @@
+// ======================================================================
+// Slate Framework <hello@slateengine.com>
+// ======================================================================
+//
+// ======================================================================
+// Slate Forms
+// ======================================================================
+
+// Inputs
+// ----------------------------------------------------------------------
+
+// Default Input Theme
+$input-skin: (
+  // Global
+  'input-class': 'input-text',
+  'use-borders': true,
+  'textlight': $bright,
+  'textdark': $dark,
+  'width': 100%,
+  'height': 48px,
+  'margin': 0 0 0 0,
+  'padding': 8px,
+  'font': inherit,
+  'font-size': $base-font-size,
+  'line-height': $line-height,
+  // Backgrounds
+  'bg': (
+    'bg-color': #fff,
+    'bg-color-hover': #eee,
+    'bg-color-focus': #eee,
+    'bg-color-disabled': $gray,
+  ),
+  // Borders
+  'borders': (
+    'border-width': 2px 2px 2px 2px,
+    'border-style': solid,
+    'border-color': $gray,
+    'border-focus-color': $dark,
+    'border-hover-color': $positive,
+    'border-disabled-color': $disabled,
+  ),
+  // Selects
+  'selects': (
+    'arrow': '<svg xmlns="http://www.w3.org/2000/svg"><path fill="#000000" d="M.758.57h10l-5 5z" fill-rule="evenodd"/></svg>',
+    'triangle-color-dark': $dark,
+    'triangle-color-light': $gray,
+    'triangle-size': 11px 6px,
+    'triangle-position': 98% center,
+  ),
+  // Addons
+  'addons': (
+    'addon-background-color': $primary,
+    'addon-hover': $positive,
+    'addon-focus': $positive,
+    'addon-active': $dark,
+    'addon-disabled': #adadad,
+    'wrapper': 'form-addon',
+    'icon': 'addon-icon',
+    'left': 'addon-left',
+    'right': 'addon-right',
+  ),
+  // Radios & Checkboxes
+  'radios': (
+    'width': 36px,
+    'height': 36px,
+    'selected-color': $positive,
+    'radio-radius': 50%,
+    'check-radio-margin': 8px,
+
+    'border-checked-color': $positive,
+    'border-checked-hover-color': lighten($positive, 15%),
+
+    'spacing': 36px,
+    'label-h-align': 48px,
+    'input-v-align': -5px,
+
+    'checkicon': '<svg xmlns="http://www.w3.org/2000/svg"><path d="M4.932 14.594c-.223-.486-.36-.79-.409-.913l-.567-1.3c-.174-.4-.323-.726-.447-.978l-.344-.692C2.502 9.408 1.718 8.488.812 7.953c1.06-.885 2.006-1.328 2.837-1.328.552 0 .986.211 1.302.632.316.421.586 1.151.809 2.19 1.612-3.03 2.867-5.124 3.766-6.28.806-1.04 1.496-1.728 2.07-2.066.573-.338 1.334-.507 2.282-.507.595 0 1.24.113 1.934.341-1.618 1.051-3.383 2.78-5.296 5.183-1.912 2.404-3.774 5.23-5.584 8.476z" fill="#000000" fill-rule="evenodd"/></svg>',
+    'checkicon-size': 15px 14px,
+
+    'radioicon': '<svg xmlns="http://www.w3.org/2000/svg"><circle fill="#000000" cx="5" cy="5" r="5" fill-rule="evenodd"/></svg>',
+    'radioicon-size': 10px 10px,
+  ),
+
+  // Range
+  'range': (
+    'contrast': 15%,
+    'ie-bottom-track-color': darken(#eee, 15%),
+    'margin': 12px,
+    'thumb': (
+      'color': $primary,
+      'radius': 100%,
+      'height': 36px,
+      'width': 36px,
+      'border-width': 2px,
+      'border-style': solid,
+      'border-color': $gray,
+    ),
+    'track': (
+      'color': #eee,
+      'radius': 2px,
+      'height': 24px,
+      'width': 100%,
+      'border-width': 2px,
+      'border-style': solid,
+      'border-color': $gray,
+    ),
+  ),
+
+  // Validation
+  'validation': (
+
+    'use-classes': true,
+
+    'invalid-class': 'invalid',
+    'valid-class': 'valid',
+    'required-class': 'required',
+
+    'valid-color': $positive,
+    'invalid-color': $warning,
+    'required-color': $negative,
+    'valid-input-border-color': $positive,
+    'invalid-input-border-color': $warning,
+    'required-input-border-color': $negative,
+
+  ),
+);

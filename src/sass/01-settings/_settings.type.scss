@@ -1,0 +1,116 @@
+// ======================================================================
+// Slate Type Config | hello@hashandsalt.com
+// ======================================================================
+
+// Basic Setup
+// ======================================================================
+
+// Enable Type Debug
+$type-debug: false;
+
+// Basic Setup
+// ======================================================================
+
+// Set Global Font size
+$base-font-size: $rem-base;
+
+// Set Global Line height
+$line-height: 1.5;
+
+// Set Global line-heights with no units
+$unitless-lineheight: true;
+
+// The ratio used to generate sizes and margins on heading tags
+$type-ratio: $perfect-fourth;
+
+// Global Font Smoothing
+$webkit-smoothing: antialiased;
+
+// Modular Steps
+// ======================================================================
+
+// Modular Stepping Multipliers
+$modular-step-alpha: 5;
+$modular-step-beta: 4;
+$modular-step-gamma: 3;
+$modular-step-delta: 2;
+$modular-step-epsilon: 1;
+$modular-step-zeta: 0;
+$modular-step-eta: -1;
+$modular-step-theta: -2;
+$modular-step-iota: -3;
+
+// Font Weights
+// ======================================================================
+
+// Thin
+$thin: 100;
+
+// Extra light
+$extralight: 200;
+
+// Light
+$light: 300;
+
+// Regular
+$regular: 400;
+
+// Medium
+$medium: 500;
+
+// Semibold
+$semibold: 600;
+
+// Bold
+$bold: 700;
+
+// Extra Bold
+$extra-bold: 800;
+
+// Black
+$black: 900;
+
+// Global font styles
+// ======================================================================
+
+// Global Font Stack
+$font-stack: $shelvetica;
+
+// Global Font Weight
+$font-weight: $regular;
+
+// Global Font Color
+$font-color: $dark;
+
+// Global heading font styles
+// ======================================================================
+
+// Heading Font Stack
+$heading-stack: $gillsans;
+
+// Heading Font Color
+$heading-weight: $regular;
+
+// Heading Font Weight
+$heading-color: $dark;
+
+// Custom Font Path
+$custom-font-path: '/assets/fonts/';
+
+// Links
+// ======================================================================
+
+// Link Color
+$link: $dark;
+
+// Link Hover Color
+$link-hover: $jet;
+
+// Link Hover Color
+$link-hover-decoration: underline;
+
+// Horizontal Rules
+// ======================================================================
+
+// Horizontal Rule color and thickness
+$hr-style: 1px solid $primary;

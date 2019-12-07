@@ -1,0 +1,206 @@
+// ======================================================================
+// Slate Button Config | hello@hashandsalt.com
+// ======================================================================
+
+// Button Themes
+// ---------------------------------------------------------------------
+
+// Default Button Theme
+$button-default: (
+
+  use-borders: true,
+
+  default: $primary,
+  hover: darken($primary, 15%),
+  focus: darken($primary, 20%),
+  active: darken($primary, 10%),
+  disabled: $disabled,
+
+  font-family: inherit,
+  textlight: $bright,
+  textdark: $dark,
+  textweight: $semibold,
+  font-size: $base-font-size,
+  textalign: center,
+  text-transform: uppercase,
+
+  border-width: 2px 2px 2px 2px,
+  border-style: solid,
+  border-color: $gray,
+  border-hover-color: $dark,
+  border-focus-color: $dark,
+  border-disabled-color: darken($disabled, 20%),
+
+  height: 44px,
+  margin: 0 0 24px 0,
+  padding: 0 8px,
+  rounded: 0,
+
+  display: inline-block,
+  boxsizing: content-box
+
+);
+
+// Addon Button
+$button-addon: (
+
+  use-borders: true,
+
+  default: $primary,
+  hover: $positive,
+  focus: $positive,
+  active: $positive,
+  disabled: $disabled,
+
+  font-family: inherit,
+  textlight: $bright,
+  textdark: $dark,
+  textweight: $semibold,
+  font-size: $base-font-size,
+  textalign: center,
+  text-transform: uppercase,
+
+  border-width: 2px 2px 2px 2px,
+  border-style: solid,
+  border-color: $gray,
+  border-hover-color: $dark,
+  border-focus-color: $dark,
+  border-disabled-color: darken($disabled, 20%),
+
+  height: 44px,
+  margin: 0 0 0 0,
+  padding: 0 8px,
+  rounded: 0,
+
+  display: inline-block,
+  boxsizing: content-box
+
+);
+
+// Positive Button Theme
+$button-positive: (
+
+  use-borders: true,
+
+  default: $positive,
+  hover: darken($positive, 15%),
+  focus: darken($positive, 20%),
+  active: darken($positive, 10%),
+  disabled: $disabled,
+
+  font-family: inherit,
+  textlight: $bright,
+  textdark: $dark,
+  textweight: $semibold,
+  font-size: $base-font-size,
+  textalign: center,
+  text-transform: uppercase,
+
+  border-width: 2px 2px 2px 2px,
+  border-style: solid,
+
+  border-color: darken($positive, 10%),
+  border-hover-color: darken($positive, 15%),
+  border-focus-color: $dark,
+  border-disabled-color: darken($disabled, 20%),
+
+  height: 44px,
+  margin: 0 0 24px 0,
+  padding: 0 8px,
+  rounded: 0,
+
+  display: inline-block,
+  boxsizing: content-box
+
+);
+
+// Negative Button Theme
+$button-negative: (
+
+  use-borders: true,
+
+  default: $negative,
+  hover: darken($negative, 15%),
+  focus: darken($negative, 20%),
+  active: darken($negative, 10%),
+  disabled: $disabled,
+
+  font-family: inherit,
+  textlight: $bright,
+  textdark: $dark,
+  textweight: $semibold,
+  font-size: $base-font-size,
+  textalign: center,
+  text-transform: uppercase,
+
+
+  border-width: 2px 2px 2px 2px,
+  border-style: solid,
+
+  border-color: darken($negative, 10%),
+  border-hover-color: darken($negative, 15%),
+  border-focus-color: $dark,
+  border-disabled-color: darken($disabled, 20%),
+
+  height: 44px,
+  margin: 0 0 24px 0,
+  padding: 0 8px,
+  rounded: 0,
+
+  display: inline-block,
+  boxsizing: content-box
+
+);
+
+// Gradient Button Theme
+$button-gradient: (
+
+    use-borders: true,
+
+    font-family: inherit,
+    textlight: $bright,
+    textdark: $dark,
+    textweight: $semibold,
+    font-size: $base-font-size,
+    textalign: center,
+    text-transform: uppercase,
+
+    height: 44px,
+    margin: 0 0 24px 0,
+    padding: 0 8px,
+    rounded: 0,
+
+    display: inline-block,
+    boxsizing: content-box,
+
+    mode: 'ttb',
+    start-pos: 0%,
+    end-pos: 100%,
+
+    default: $gradient-start,
+
+    // Default Colors
+    start-color: $gradient-start,
+    end-color: $gradient-end,
+    // Hover Colors
+    start-color-hover: $gradient-start,
+    end-color-hover: darken($gradient-end, 10%),
+    // Focus Colors
+    start-color-focus: $gradient-start,
+    end-color-focus: darken($gradient-end, 10%),
+    // Active Colors
+    start-color-active: $gradient-start,
+    end-color-active: darken($gradient-end, 10%),
+    // Disabled Colors
+    start-color-disabled: $disabled,
+    end-color-disabled: darken($disabled, 30%),
+
+    border-width: 2px 2px 2px 2px,
+    border-style: solid,
+    border-color: darken($gradient-start, 10%),
+    border-hover-color: $dark,
+    border-active-color: $dark,
+    border-focus-color: $dark,
+    border-disabled-color: darken($disabled, 20%),
+
+);

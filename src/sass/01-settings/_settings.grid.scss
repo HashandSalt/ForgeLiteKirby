@@ -1,0 +1,141 @@
+// ======================================================================
+// Slate Grid Config | hello@hashandsalt.com
+// ======================================================================
+
+// ======================================================================
+// Grid
+// ======================================================================
+
+// Grid Total Columns
+$total-columns: 12;
+
+// Grid Total Width
+$total-width: 100%;
+
+// Grid Gutter Width
+$gutter-width: 2%;
+
+// Grid Column Bottom Spacing
+$column-bottom-spacing: 24px;
+
+// Grid Container margin
+$container-margin: 2%;
+
+// Class to use for rows
+$class-container: 'row';
+
+// Class to use for columns
+$class-column: 'col';
+
+// Class to use for push
+$class-push: 'push';
+
+// Center Containers
+$center-containers: true;
+
+// Center Containers Max Width
+$center-container-max-width: 1140px;
+
+// Breakpoint - tiny
+$bp-tiny: 320px;
+
+// Breakpoint - xsmall
+$bp-xsmall: 480px;
+
+// Breakpoint - small
+$bp-small: 640px;
+
+// Breakpoint - medium
+$bp-medium: 800px;
+
+// Breakpoint - large
+$bp-large: 960px;
+
+// Breakpoint - xl
+$bp-xl: 1140px;
+
+// ======================================================================
+// Gridler Defaults
+// ======================================================================
+
+// Gridler Mixin - Class to use for the columns
+$gridler-element: $class-column;
+
+// Breakpoints
+
+// Gridler Mixin - Small column breakpoint
+$gridler-sm: $bp-small;
+
+// Gridler Mixin - Medium column breakpoint
+$gridler-me: $bp-medium;
+
+// Gridler Mixin - Large column breakpoint
+$gridler-lg: $bp-large;
+
+// Columns
+
+// Gridler Mixin - Small column count
+$gridler-sm-c: 6;
+
+// Gridler Mixin - Medium column count
+$gridler-me-c: 4;
+
+// Gridler Mixin - Large column count
+$gridler-lg-c: 3;
+
+// Gridler Mixin - Spacing below each column
+$gridler-column-bottom-spacing: $column-bottom-spacing;
+
+// ======================================================================
+// Holy Grail Defaults
+// ======================================================================
+
+// Holy Grail Left Sidebar Element Class
+$holygrail-left-element: 'left';
+
+// Holy Grail Middle Class
+$holygrail-middle-element: 'middle';
+
+// Holy Grail Right Sidebar Class
+$holygrail-right-element: 'right';
+
+// Holy Grail Left Sidebar Column Width
+$holygrail-left-column: 3;
+
+// Holy Grail middle Sidebar Column Width
+$holygrail-middle-column: 5;
+
+// Holy Grail right Sidebar Column Width
+$holygrail-right-column: 4;
+
+// Holy Grail Breakpoint
+// @group Layout Helpers
+$holygrail-breakpoint: $bp-medium;
+
+// Holy Grail Bottom Spacing
+$holygrail-column-bottom-spacing: $column-bottom-spacing;
+
+// ======================================================================
+// Flank
+// ======================================================================
+
+// Flank Direction
+$flankdir: 'right';
+
+// Flank Main Class
+$flank-main-element: 'main';
+
+// Flank Flank Class
+$flank-flank-element: 'flank';
+
+// Flank Main Column Width
+$flank-main-column: 8;
+
+// Flank Column Width
+$flank-flank-column: 4;
+
+// Flank Breakpoint
+$flank-breakpoint: $bp-medium;
+
+// Flank Bottom Spacing
+$flank-column-bottom-spacing: $column-bottom-spacing;

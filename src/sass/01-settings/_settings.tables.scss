@@ -1,0 +1,74 @@
+// ======================================================================
+// Slate Framework <hello@slateengine.com>
+// ======================================================================
+//
+// ======================================================================
+// Slate Tables
+// ======================================================================
+
+// Default Table Skin.
+
+$default-table: (
+    fontfamily: $font-stack,
+    layout: fixed,
+    background: #fff,
+    borderwidth: 2px 2px 2px 2px,
+    bordercolor: $jet,
+    borderstyle: solid,
+    margin: 24px 0 24px 0,
+    bordercollapse: collapse,
+    width: 100%,
+
+    caption: (
+        background: #fff,
+        padding: 24px 0,
+        fontfamily: inherit,
+        fontweight: $bold,
+        fontcolor: $font-color,
+        fontsize: 22px,
+        textalign: center,
+        borderwidth: 0 0 1px 0,
+        bordercolor: $bright,
+        borderstyle: solid
+    ),
+    header: (
+        background: $bright,
+        padding: 16px 0,
+        fontfamily: inherit,
+        fontweight: $font-weight,
+        fontcolor: $font-color,
+        fontsize: 16px,
+        textalign: center,
+        verticalalign: middle,
+        borderwidth: 1px 1px 1px 1px,
+        bordercolor: #fff,
+        borderstyle: solid
+    ),
+    body: (
+        background: $bright,
+        oddbackground: $bright,
+        evenbackground: #fff,
+        padding: 8px 0,
+        fontfamily: inherit,
+        fontweight: $font-weight,
+        fontcolor: $font-color,
+        fontsize: 16px,
+        textalign: center,
+        verticalalign: middle,
+        borderwidth: 1px 1px 1px 1px,
+        bordercolor: #fff,
+        borderstyle: solid
+    ),
+    footer: (
+        background: $bright,
+        padding: 8px 0,
+        fontfamily: inherit,
+        fontweight: $font-weight,
+        fontcolor: $font-color,
+        fontsize: 16px,
+        textalign: center,
+        borderwidth: 1px 1px 1px 1px,
+        bordercolor: #fff,
+        borderstyle: solid
+    ),
+);

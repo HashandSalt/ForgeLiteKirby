@@ -1,0 +1,41 @@
+# System files
+# ------------
+
+Icon
+.DS_Store
+node_modules
+yarn.lock
+
+# Temporary files
+# ---------------
+
+/public/media/*
+!/public/media/index.html
+
+/public/vendor/*
+
+# -------------SECURITY-------------
+# NEVER publish these files via Git!
+# -------------SECURITY-------------
+
+# Cache Files
+# ---------------
+
+/public/site/cache/*
+!/public/site/cache/index.html
+
+# Accounts
+# ---------------
+
+/public/site/accounts/*
+!/public/site/accounts/index.html
+
+# Sessions
+# ---------------
+
+/public/site/sessions/*
+!/public/site/sessions/index.html
+
+# License
+# ---------------
+/public/site/config/.licpublic/nse

@@ -1,0 +1,28 @@
+label:              Content
+icon:               text
+
+columns:
+  # CONTENT
+  left:
+    width:          2/3
+    sections:
+      # FIELDS
+      content:
+        type:       fields
+        fields:
+          pagetext:
+            label:  Content
+            type:   textarea
+
+
+
+  # SIDEBAR
+  right:
+    width:          1/3
+    sections:
+
+      settings:
+        type:       fields
+
+        fields:
+          extends:  settings

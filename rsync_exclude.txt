@@ -1,0 +1,13 @@
+.git
+.gitignore
+.DS_Store
+.well-known
+.user.ini
+php.ini
+error_log
+fonts.txt
+cgi-bin
+site/sessions
+site/cache
+.lock
+.cache

@@ -1,0 +1,25 @@
+// ======================================================================
+// Slate Colors | hello@hashandsalt.com
+// ======================================================================
+
+// Basic
+$bright: #eee;
+$gray: #9f9f9f;
+$dark: #3c3c3c;
+$jet: #000;
+
+// Pallette
+$primary: #96def0;
+$secondary: #2980b9;
+$tertiary: #8e44ad;
+
+// Feedback
+$positive: #2ecc71;
+$negative: #971318;
+$warning: #f39c12;
+$disabled: #adadad;
+
+// Gradients
+$gradient-start: $primary;
+$gradient-middle: darken($primary, 20%);
+$gradient-end: darken($primary, 40%);

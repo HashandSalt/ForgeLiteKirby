@@ -1,0 +1,47 @@
+title:                Site
+
+tabs:
+  sitecontent:
+    label:            Site Content
+    icon:             page
+    columns:
+      # Content
+      left:
+        width:        2/3
+        sections:
+          sitepages:
+            headline: Site Pages
+            type:     pages
+            unlisted: true
+            status:   listed
+            layout:   cards
+            sortBy:   title
+            size:     tiny
+            limit:    20
+            image:
+              cover:  false
+              back:   white
+              ratio:  16/9
+
+      # sidebar
+      right:
+        width:        1/3
+        sections:
+
+          # Pages
+          drafts:
+            headline: Drafts
+            type:     pages
+            status:   drafts
+            sortBy:   title
+          unlisted:
+            headline: Unlisted
+            type:     pages
+            unlisted: true
+            status:   unlisted
+            sortBy:   title
+
+
+
+  # Site Files
+  sitefiles:          tabs/sitefiles

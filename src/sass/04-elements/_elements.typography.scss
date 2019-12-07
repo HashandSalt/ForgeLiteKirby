@@ -1,0 +1,214 @@
+// ======================================================================
+// 04-elements - Typography
+// ======================================================================
+
+
+// ======================================================================
+// HTML
+// ======================================================================
+
+html {
+  @include rem-baseline(100%);
+  @include font-smoothing(on);
+  line-height: $line-height;
+  color: $font-color;
+  font-family: $font-stack;
+  font-weight: $font-weight;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  @include baseline;
+}
+
+// ======================================================================
+// Headings
+// ======================================================================
+
+.h1,
+h1 {
+  // @include type-modular(delta, 0px, 36px);
+  @include type-free(68px, 24px, 24px, 72px, true);
+}
+
+.h2,
+h2 {
+  // @include type-modular(delta, 0px, 12px);
+  @include type-free(42px, 24px, 24px, 48px, true);
+}
+
+.h3,
+h3 {
+  // @include type-modular(epsilon, 0px, 0px );
+  @include type-free(26px, 24px, 24px, 48px, true);
+}
+
+.h4,
+.h5,
+h4,
+h5 {
+  // @include type-modular(epsilon, 0px, 0px );
+  @include type-free(16px, 24px, 0, 24px, true);
+}
+
+.h1,
+.h2,
+.h4,
+.h5,
+h1,
+h2,
+h3,
+h4,
+h5 {
+  color: $heading-color;
+  font-family: $heading-stack;
+  font-weight: $heading-weight;
+}
+// ======================================================================
+// Paragraphs
+// ======================================================================
+
+p {
+  // @include type-modular(zeta, 0px, 24px);
+  @include type-free($base-font-size, 0, 24px, 24px, true);
+}
+// ======================================================================
+// Lists
+// ======================================================================
+
+ol,
+ul {
+  // @include type-modular(zeta);
+  @include type-free($base-font-size, 0px, 24px, 24px, true);
+
+  ol {
+    margin-bottom: 0;
+    margin-top: 0;
+  }
+
+  ul {
+    margin-bottom: 0;
+    margin-top: 0;
+  }
+}
+
+dl {
+  // @include type-modular(zeta);
+  @include type-free($base-font-size, 0px, 24px, 24px, true);
+
+  dt {
+    font-weight: $semibold;
+  }
+
+  dd {
+    font-style: italic;
+  }
+}
+// ======================================================================
+// Tables
+// ======================================================================
+// table {
+//   @include table($default-table);
+// }
+// ======================================================================
+// Quotes
+// ======================================================================
+
+blockquote {
+  // @include type-modular(zeta);
+  @include type-free($base-font-size, 0px, 24px, 24px, true);
+  font-style: italic;
+}
+
+blockquote > p {
+  padding: 0;
+}
+// ======================================================================
+// Misc
+// ======================================================================
+
+a {
+  color: $link;
+  text-decoration: none;
+
+  &:hover {
+    color: $link-hover;
+    text-decoration: $link-hover-decoration;
+  }
+
+  &:active,
+  &:focus {
+    outline: none;
+    color: $link-hover;
+  }
+
+  p & {
+    border-bottom: 1px solid $dark;
+  }
+}
+
+hr {
+  border: 0;
+  border-top: $hr-style;
+  display: block;
+  height: 1px;
+  padding: 0;
+  margin-bottom: rem(24px);
+}
+
+sub,
+sup {
+  position: relative;
+  top: -0.4rem;
+  vertical-align: baseline;
+}
+
+sub {
+  top: 0.4rem;
+}
+
+b {
+  line-height: 1;
+}
+
+small {
+  line-height: 1;
+}
+
+strong {
+  font-weight: $bold;
+  color: $dark;
+}
+
+cite,
+dfn,
+em,
+q {
+  line-height: $line-height;
+}
+
+code {
+  @include type-free($base-font-size, 0px, 24px, 24px, true);
+}
+
+kbd {
+  margin-bottom: 1px;
+  padding: 0;
+  position: relative;
+  top: -1px;
+}
+
+pre {
+  @include type-free($base-font-size, 0px, 24px, 24px, true);
+  background-color: $dark;
+  color: $bright;
+  font-weight: $bold;
+  @include rem(padding, 12px);
+  @include rem(border-radius, 4px);
+  font-family: $terminal;
+  white-space: pre;
+  word-break: break-all;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  white-space: pre\9;
+}

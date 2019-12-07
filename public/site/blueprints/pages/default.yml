@@ -1,0 +1,12 @@
+title:     Default
+
+options:
+  extends: options/changetemplate
+
+tabs:
+
+  # CONTENT
+  content: tabs/content
+
+  # PAGE FILES
+  files:   tabs/pagefiles

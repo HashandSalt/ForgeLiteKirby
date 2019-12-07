@@ -1,0 +1,38 @@
+title:                 Images
+
+accept:                image/*
+
+tabs:
+
+  # BASIC
+  basic:
+    label:             Basic
+    icon:              text
+    columns:
+
+      # main
+      left:
+        width:         2/3
+        sections:
+          meta:
+            type:      fields
+            fields:
+              alt:
+                label: Alt
+                type:  text
+              caption:
+                label: Caption
+                type:  textarea
+
+      # sidebar
+      right:
+        width:         1/3
+        sections:
+          # a list of files
+          feature:
+            type:      fields
+            fields:
+              feature:
+                label: Feature Image?
+                type:  toggle
+                width: 1/3

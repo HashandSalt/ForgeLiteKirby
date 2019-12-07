@@ -1,0 +1,51 @@
+// ======================================================================
+// Slate Framework <hello@slateengine.com>
+// ======================================================================
+//
+// ======================================================================
+// Slate Forms
+// ======================================================================
+
+// Main Skin
+// ---------------------------------------------------------------------
+
+$form-skin: (
+  // Components
+  components: (
+    baseform: true,
+    inputs: true,
+    addons: true,
+    select: true,
+    range: true,
+    validation: true
+  ),
+  // Form Element
+  form: (
+    margin: 0 0 0 0,
+    padding: 0,
+    color: $dark,
+  ),
+  // Legend Element
+  legend: (
+    margin: 0 0 0 0,
+    line-height: $line-height,
+  ),
+  // Fieldset Element
+  fieldset: (
+    margin: 0 0 0 0,
+    padding: 24px 0 24px 0,
+  ),
+  // Label Elements
+  labels: (
+    color: $dark,
+    spacing: 0 0 0 0,
+  ),
+  // Skins
+  skins: (
+    inputs: $input-skin,
+    addons: $input-skin,
+    select: $input-skin,
+    range: $input-skin,
+    validation: $input-skin,
+  ),
+);

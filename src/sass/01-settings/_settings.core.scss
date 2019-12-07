@@ -1,0 +1,20 @@
+// ======================================================================
+// Slate Core Config | hello@hashandsalt.com
+// ======================================================================
+
+// Core
+/// Media Embed - 16:9 ratio
+/// @group Media
+$ioe-padding: ((100 / 16) * 9);
+
+/// Base Value For REM calculations
+/// @group Type
+$rem-base: 16px;
+
+/// REM Fallback
+/// @group REM Calc
+$rem-fallback: false;
+
+/// PX units only
+/// @group REM Calc
+$rem-px-only: false;
