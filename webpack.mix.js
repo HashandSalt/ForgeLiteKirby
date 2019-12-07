@@ -19,7 +19,7 @@ let purgeCss = require('laravel-mix-purgecss');
 // BrowserSync
 // ======================================================================
 mix.browserSync({
-  proxy: 'http://hashandsalt2020.test',
+  proxy: 'http://forgelite.test',
   files: [
     "public/assets/js/**/*.js",
     "public/assets/css/**/*.css",
