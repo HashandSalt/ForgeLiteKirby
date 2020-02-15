@@ -27,20 +27,20 @@ body {
 
 .h1,
 h1 {
-  // @include type-modular(delta, 0px, 36px);
-  @include type-free(68px, 24px, 24px, 72px, true);
+  // @include type-modular(delta, 0px, 48px);
+  @include type-free(38px, 24px, 24px, 48px, true);
 }
 
 .h2,
 h2 {
-  // @include type-modular(delta, 0px, 12px);
-  @include type-free(42px, 24px, 24px, 48px, true);
+  // @include type-modular(delta, 0px, 48px);
+  @include type-free(28px, 24px, 24px, 48px, true);
 }
 
 .h3,
 h3 {
-  // @include type-modular(epsilon, 0px, 0px );
-  @include type-free(26px, 24px, 24px, 48px, true);
+  // @include type-modular(epsilon, 0px, 24px );
+  @include type-free(21px, 24px, 0px, 24px, true);
 }
 
 .h4,
@@ -79,7 +79,7 @@ p {
 ol,
 ul {
   // @include type-modular(zeta);
-  @include type-free($base-font-size, 0px, 24px, 24px, true);
+  @include type-free($base-font-size, 0, 24px, 24px, true);
 
   ol {
     margin-bottom: 0;
@@ -94,7 +94,7 @@ ul {
 
 dl {
   // @include type-modular(zeta);
-  @include type-free($base-font-size, 0px, 24px, 24px, true);
+  @include type-free($base-font-size, 0, 24px, 24px, true);
 
   dt {
     font-weight: $semibold;
@@ -116,7 +116,7 @@ dl {
 
 blockquote {
   // @include type-modular(zeta);
-  @include type-free($base-font-size, 0px, 24px, 24px, true);
+  @include type-free($base-font-size, 0, 24px, 24px, true);
   font-style: italic;
 }
 
@@ -188,7 +188,7 @@ q {
 }
 
 code {
-  @include type-free($base-font-size, 0px, 24px, 24px, true);
+  @include type-free($base-font-size, 0, 24px, 24px, true);
 }
 
 kbd {
@@ -199,12 +199,12 @@ kbd {
 }
 
 pre {
-  @include type-free($base-font-size, 0px, 24px, 24px, true);
+  @include type-free($base-font-size, 0, 24px, 24px, true);
+  @include rem(padding, 12px);
+  @include rem(border-radius, 4px);
   background-color: $dark;
   color: $bright;
   font-weight: $bold;
-  @include rem(padding, 12px);
-  @include rem(border-radius, 4px);
   font-family: $terminal;
   white-space: pre;
   word-break: break-all;

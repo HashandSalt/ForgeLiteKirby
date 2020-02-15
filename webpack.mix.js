@@ -13,8 +13,8 @@ let purgeCss = require('laravel-mix-purgecss');
 // Copy Files
 // ======================================================================
 
-// mix.copyDirectory('src/fonts', 'public/assets/fonts');
-// mix.copyDirectory('src/images/single', 'public/assets/images');
+mix.copyDirectory('src/fonts', 'public/assets/fonts');
+mix.copyDirectory('src/images/single', 'public/assets/images');
 
 // BrowserSync
 // ======================================================================
@@ -39,7 +39,7 @@ mix.js('src/js/ga.js', 'public/assets/js');
 // SASS
 // ======================================================================
 mix.sass('src/sass/site.scss', 'public/assets/css', {
-  includePaths: ["node_modules/slatesass/", "node_modules/slatesasskits/"],
+  includePaths: ["node_modules/@slateengine/slatesass/", "node_modules/@slateengine/slatesasskits/"],
   precision: 5
 }).purgeCss({
   enabled: false,

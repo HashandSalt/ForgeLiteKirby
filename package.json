@@ -15,8 +15,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "yarn watch",
-    "dev": "cp node_modules/normalize.css/normalize.css src/sass/03-generic/_normalize.scss && cross-env NODE_ENV=development webpack --progress --hide-modules --config=$npm_package_config_webpack",
-    "watch": "cp node_modules/normalize.css/normalize.css src/sass/03-generic/_normalize.scss && cross-env NODE_ENV=development webpack --watch --progress --hide-modules --config=$npm_package_config_webpack",
+    "dev": "cross-env NODE_ENV=development webpack --progress --hide-modules --config=$npm_package_config_webpack",
+    "watch": "cross-env NODE_ENV=development webpack --watch --progress --hide-modules --config=$npm_package_config_webpack",
     "production": "cross-env NODE_ENV=production webpack --progress --hide-modules --config=$npm_package_config_webpack",
     "images:assets:min": "imageoptim $npm_package_config_assets && find $npm_package_config_assets -name '*.svg' -type f -exec svgo  {} \\;",
     "favicon": "real-favicon generate faviconDescription.json faviconData.json $npm_package_config_favout",
@@ -46,7 +46,7 @@
     "webpack-spritesmith": "^1.0.1"
   },
   "dependencies": {
-    "slatesass": "slateengine/slate",
-    "slatesasskits": "slateengine/slatekits"
+    "@slateengine/slatesass": "^8.0.5",
+    "@slateengine/slatesasskits": "^8.0.7"
   }
 }

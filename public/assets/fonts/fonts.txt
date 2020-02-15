@@ -1,13 +1,9 @@
 // ======================================================================
-// Forge Lite | hello@hashandsalt.com
+// kirbykit.dev hello@hashandsalt.com
+// ======================================================================
+//
+// ======================================================================
+// Fonts
 // ======================================================================
 
-// window.$ = window.jQuery = require('jquery');
-
-// ======================================================================
-// Modules
-// ======================================================================
-
-// require any further scripts here ie:
-// require('npmpackagename');
-// require('./mylocalfile.js');
+Drop your font files in here, but pay attention to the font license!
