@@ -94,7 +94,7 @@ trait UserActions
     {
         return $this->commit('changePassword', [$this, $password], function ($user, $password) {
             $user = $user->clone([
-                'password' => $password = $user->hashPassword($password)
+                'password' => $password = User::hashPassword($password)
             ]);
 
             $user->writePassword($password);
@@ -165,7 +165,7 @@ trait UserActions
         $data = $props;
 
         if (isset($props['password']) === true) {
-            $data['password'] = static::hashPassword($props['password']);
+            $data['password'] = User::hashPassword($props['password']);
         }
 
         $props['role'] = $props['model'] = strtolower($props['role'] ?? 'default');
@@ -275,6 +275,26 @@ trait UserActions
     protected function readPassword(): ?string
     {
         return F::read($this->root() . '/.htpasswd');
+    }
+
+    /**
+     * Updates the user data
+     *
+     * @param array $input
+     * @param string $language
+     * @param bool $validate
+     * @return self
+     */
+    public function update(array $input = null, string $language = null, bool $validate = false)
+    {
+        $user = parent::update($input, $language, $validate);
+
+        // set auth user data only if the current user is this user
+        if ($user->isLoggedIn() === true) {
+            $this->kirby()->auth()->setUser($user);
+        }
+
+        return $user;
     }
 
     /**

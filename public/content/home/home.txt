@@ -1,1 +1,15 @@
 Title: Home
+
+----
+
+Pagetext:
+
+Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Vestibulum id ligula porta felis euismod semper.  Praesent commodo cursus  magna, vel scelerisque nisl consectetur et. Cras mattis consectetur purus sit amet fermentum.
+
+Maecenas sed  diam eget risus varius blandit sit amet non magna. Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Maecenas sed diam eget risus varius blandit sit amet non magna. Curabitur blandit tempus porttitor. Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Cras mattis consectetur purus sit amet fermentum.
+
+Vivamus sagittis lacus vel augue laoreet rutrum faucibus dolor auctor. Sed posuere consectetur est at lobortis. Maecenas faucibus mollis interdum. Maecenas faucibus mollis interdum.
+
+----
+
+Featureinnav: true

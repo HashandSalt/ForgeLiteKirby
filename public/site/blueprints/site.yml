@@ -44,4 +44,7 @@ tabs:
 
 
   # Site Files
-  sitefiles:          tabs/sitefiles
+  sitefiles:          tabs/files
+
+  # Site Files
+  menu:               tabs/sitemenu
