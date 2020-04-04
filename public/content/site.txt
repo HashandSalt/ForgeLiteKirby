@@ -1,1 +1,10 @@
-Title: Site Title
+Title: Forge Lite
+
+----
+
+Menu:
+
+- 
+  link:
+    type: page
+    value: home

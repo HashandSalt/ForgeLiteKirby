@@ -1,5 +1,5 @@
 {
-  "name": "forgelite.test",
+  "name": "forgelite",
   "version": "0.0.1",
   "description": "A boilerplate for Kirby CMS",
   "author": "Hash&Salt",
@@ -39,11 +39,9 @@
     "glob-all": "^3.1.0",
     "laravel-mix": "^4.0.16",
     "laravel-mix-purgecss": "^4.1.0",
-    "normalize.css": "^8.0.1",
     "sass": "^1.20.3",
     "sass-loader": "7.*",
-    "vue-template-compiler": "^2.6.10",
-    "webpack-spritesmith": "^1.0.1"
+    "vue-template-compiler": "^2.6.10"
   },
   "dependencies": {
     "@slateengine/slatesass": "^8.0.5",

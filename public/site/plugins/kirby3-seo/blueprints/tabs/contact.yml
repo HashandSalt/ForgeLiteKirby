@@ -1,0 +1,40 @@
+label:                 Contact
+icon:                  globe
+
+fields:
+  telephone:
+    label:             Telephone
+    type:              tel
+    width:             1/3
+  emailaddress:
+    label:             Email Address
+    type:              email
+    width:             1/3
+  socialtwitterURL:
+    label:             Twitter
+    type:              url
+    width:             1/3
+  twittercreator:
+    label:             Twitter
+    type:              url
+    width:             1/3
+  sociallinkedinURL:
+    label:             LinkedIn
+    type:              url
+    width:             1/3
+  socialfaceBookURL:
+    label:             Facebook
+    type:              url
+    width:             1/3
+  socialinstagramURL:
+    label:             Instagram
+    type:              url
+    width:             1/3
+  socialpinterestURL:
+    label:             Pinterest
+    type:              url
+    width:             1/3
+  socialyoutubeURL:
+    label:             Youtube
+    type:              url
+    width:             1/3

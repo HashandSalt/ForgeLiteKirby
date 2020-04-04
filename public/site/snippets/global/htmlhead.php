@@ -3,11 +3,11 @@
 
 <head>
 
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width">
-  <?= snippet('global/favicon') ?>
-  <title><?= $page->title() ?></title>
-  <?= css('assets/css/site.css') ?>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+<?= snippet('global/favicon') ?>
+<?= snippet('seo/meta') ?>
+<?= css('assets/css/site.css') ?>
 
 </head>
 

@@ -19,7 +19,10 @@
     },
     "require": {
         "php": ">=7.1.0",
-        "getkirby/cms": "^3.0"
+        "getkirby/cms": "^3.0",
+        "hashandsalt/kirby3-seo": "^1.0",
+        "hashandsalt/kirby3-schema": "^0.0.1",
+        "oblik/kirby-link-field": "^3.0"
     },
     "config": {
         "optimize-autoloader": true

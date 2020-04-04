@@ -1,0 +1,21 @@
+label:                   Menu
+icon:                    menu
+columns:
+  # main
+  menu:
+    sections:
+
+      # files
+      sitemenu:
+        type:            fields
+        fields:
+          menu:
+            label:       Site Menu
+            type:        structure
+            fields:
+              link:
+                type:    link
+                label:   link
+                options:
+                  - page
+                  - url
