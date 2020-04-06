@@ -1,0 +1,32 @@
+// ======================================================================
+// Slate Media Query Config | hello@hashandsalt.com
+// ======================================================================
+
+// Breakpoints
+// ----------------------------------------------------------------------
+$breakpoints: (
+  'tiny': $bp-tiny,
+  'xsmall': $bp-xsmall,
+  'small': $bp-small,
+  'medium': $bp-medium,
+  'large': $bp-large,
+  'xl': $bp-xl
+);
+
+// Media Types
+// ----------------------------------------------------------------------
+$media-expressions: (
+  'screen': 'screen',
+  'print': 'print',
+  'handheld': 'handheld',
+  'retina2x': ('(-webkit-min-device-pixel-ratio: 2)', '(min-resolution: 192dpi)'),
+  'retina3x': ('(-webkit-min-device-pixel-ratio: 3)', '(min-resolution: 350dpi)')
+);
+
+// Unit Intervals
+// ----------------------------------------------------------------------
+$unit-intervals: (
+  'px': 0, //1
+  'em': 0, //0.01
+  'rem': 0 //0.1
+);
