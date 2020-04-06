@@ -6,6 +6,11 @@
   @include container;
   display: grid;
   grid-template-columns: 1fr 2fr;
-  padding: rem(24px) 0 rem(24px) 0;
+  @include media("<medium") {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 1fr;
+    grid-template-rows: auto;
+  }
+  padding: rem(24px) 0;
   align-items: center;
 }

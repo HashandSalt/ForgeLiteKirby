@@ -7,5 +7,8 @@
   padding: 0;
   list-style: none;
   display: grid;
-  justify-content: flex-end;
+  justify-content: center;
+  @include media(">medium") {
+    justify-content: flex-end;
+  }
 }

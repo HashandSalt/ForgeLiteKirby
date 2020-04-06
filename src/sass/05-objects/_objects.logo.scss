@@ -3,7 +3,17 @@
 // ======================================================================
 
 .logo {
+  a {
+    display: block;
+    width: rem(80px);
+    height: rem(80px);
+  }
+
   svg {
-    max-width: rem(80px);
+    width: 100%;
+    height: 100%;
+  }
+  @include media("<medium") {
+    margin: 0 auto;
   }
 }

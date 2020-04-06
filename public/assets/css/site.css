@@ -335,8 +335,14 @@ img {
   border-color: #fff;
 }
 
+.logo a {
+  display: block;
+  width: 5rem;
+  height: 5rem;
+}
 .logo svg {
-  max-width: 5rem;
+  width: 100%;
+  height: 100%;
 }
 
 .container {
@@ -358,7 +364,7 @@ img {
   width: 96%;
   display: grid;
   grid-template-columns: 1fr 2fr;
-  padding: 1.5rem 0 1.5rem 0;
+  padding: 1.5rem 0;
   align-items: center;
 }
 .header:after {
@@ -385,6 +391,23 @@ footer:after {
   padding: 0;
   list-style: none;
   display: grid;
-  justify-content: flex-end;
+  justify-content: center;
+}
+
+@media (max-width: 800px) {
+  .logo {
+    margin: 0 auto;
+  }
+  .header {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 1fr;
+    grid-template-rows: auto;
+  }
+}
+
+@media (min-width: 800px) {
+  .menu-list {
+    justify-content: flex-end;
+  }
 }
 /*# sourceMappingURL=site.css.map*/
