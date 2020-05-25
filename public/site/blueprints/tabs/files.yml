@@ -1,21 +1,20 @@
-label:              Files
-icon:               file
+label:            Files
+icon:             file
 columns:
   # main
   left:
-    width:          3/3
+    width:        3/3
     sections:
 
       # files
       imagefiles:
-        headline:   Image Files
-        type:       files
-        uploads:
-          template: images
-        layout:     cards
-        sortBy:     title
-        size:       tiny
+        headline: Image Files
+        type:     files
+        template: images
+        layout:   cards
+        sortBy:   title
+        size:     tiny
         image:
-          cover:    true
-          back:     black
-          ratio:    16/9
+          cover:  true
+          back:   black
+          ratio:  16/9
