@@ -1,6 +1,0 @@
-type:           group
-fields:
-  featureinnav:
-    label:      Navigation
-    type:       toggle
-    text:       Include in menu?
