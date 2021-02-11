@@ -10,7 +10,7 @@ A slightly enhanced version of Kirby Plainkit using Laraval Mix to build the sou
 
 ## Other tasks
 
-Contains extra tasks in `package.json` for optimising images and deploying the project. Read that file for more info. The image optimisation tasks require ImageOptim CLI and SVGO installed locally.
+Contains extra tasks in `package.json` for optimising images and deploying the project. Read that file for more info.
 
 For deploys, amend the paths and server details in the `deploy` bash script in the project root. Trigger it via the scripts in `package.json`.
 
