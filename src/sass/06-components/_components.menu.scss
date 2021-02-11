@@ -8,6 +8,8 @@
   list-style: none;
   display: grid;
   justify-content: center;
+  text-transform: uppercase;
+  font-weight: $semibold;
   @include media(">medium") {
     justify-content: flex-end;
   }

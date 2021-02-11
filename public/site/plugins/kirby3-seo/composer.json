@@ -1,6 +1,6 @@
 {
-  "name": "hashandsalt/kirby3-seo",
-  "description": "Kirby 3 - SEO tools",
+  "name": "hashandsalt/kirby3-slate",
+  "description": "Kirby 3 plugin for the Slate Framework",
   "type": "kirby-plugin",
   "license": "MIT",
   "authors": [{

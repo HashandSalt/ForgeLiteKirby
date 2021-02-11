@@ -1,0 +1,9 @@
+title:     Default
+
+tabs:
+
+  # CONTENT
+  content: tabs/content
+
+  # PAGE FILES
+  files:   tabs/files

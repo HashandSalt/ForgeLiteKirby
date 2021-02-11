@@ -17,10 +17,11 @@ return [
     ],
     'props' => [
         /**
-         * Optional array of templates that should only be allowed to add.
+         * Optional array of templates that should only be allowed to add
+         * or `false` to completely disable page creation
          */
-        'create' => function ($add = null) {
-            return $add;
+        'create' => function ($create = null) {
+            return $create;
         },
         /**
          * Enables/disables reverse sorting
@@ -37,8 +38,8 @@ return [
         /**
          * Optional info text setup. Info text is shown on the right (lists) or below (cards) the page title.
          */
-        'info' => function (string $info = null) {
-            return $info;
+        'info' => function ($info = null) {
+            return I18n::translate($info, $info);
         },
         /**
          * The size option controls the size of cards. By default cards are auto-sized and the cards grid will always fill the full width. With a size you can disable auto-sizing. Available sizes: `tiny`, `small`, `medium`, `large`, `huge`
@@ -81,8 +82,8 @@ return [
         /**
          * Setup for the main text in the list or cards. By default this will display the page title.
          */
-        'text' => function (string $text = '{{ page.title }}') {
-            return $text;
+        'text' => function ($text = '{{ page.title }}') {
+            return I18n::translate($text, $text);
         }
     ],
     'computed' => [
@@ -125,7 +126,7 @@ return [
 
             // sort
             if ($this->sortBy) {
-                $pages = $pages->sortBy(...$pages::sortArgs($this->sortBy));
+                $pages = $pages->sort(...$pages::sortArgs($this->sortBy));
             }
 
             // flip
@@ -135,8 +136,9 @@ return [
 
             // pagination
             $pages = $pages->paginate([
-                'page'  => $this->page,
-                'limit' => $this->limit
+                'page'   => $this->page,
+                'limit'  => $this->limit,
+                'method' => 'none' // the page is manually provided
             ]);
 
             return $pages;
@@ -155,7 +157,7 @@ return [
                     'id'          => $item->id(),
                     'dragText'    => $item->dragText(),
                     'text'        => $item->toString($this->text),
-                    'info'        => $item->toString($this->info ?? false),
+                    'info'        => $item->toString($this->info),
                     'parent'      => $item->parentId(),
                     'icon'        => $item->panelIcon($image),
                     'image'       => $image,
@@ -163,7 +165,9 @@ return [
                     'status'      => $item->status(),
                     'permissions' => [
                         'sort'         => $permissions->can('sort'),
-                        'changeStatus' => $permissions->can('changeStatus')
+                        'changeSlug'   => $permissions->can('changeSlug'),
+                        'changeStatus' => $permissions->can('changeStatus'),
+                        'changeTitle'  => $permissions->can('changeTitle')
                     ]
                 ];
             }

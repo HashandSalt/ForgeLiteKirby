@@ -5,6 +5,9 @@ Icon
 .DS_Store
 node_modules
 yarn.lock
+package-lock.json
+sitespeed-result
+yarn-error.log
 
 # Temporary files
 # ---------------
@@ -39,3 +42,5 @@ yarn.lock
 # License
 # ---------------
 /public/site/config/.licpublic/nse
+
+

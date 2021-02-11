@@ -9,6 +9,7 @@ use Kirby\Exception\PermissionException;
 use Kirby\Http\Remote;
 use Kirby\Http\Uri;
 use Kirby\Http\Url;
+use Kirby\Toolkit\A;
 use Kirby\Toolkit\Dir;
 use Kirby\Toolkit\F;
 use Kirby\Toolkit\Str;
@@ -32,7 +33,7 @@ use Throwable;
 class System
 {
     /**
-     * @var App
+     * @var \Kirby\Cms\App
      */
     protected $app;
 
@@ -134,6 +135,7 @@ class System
      * if they don't exist yet
      *
      * @return void
+     * @throws \Kirby\Exception\PermissionException
      */
     public function init()
     {
@@ -189,18 +191,11 @@ class System
      */
     public function isLocal(): bool
     {
-        $server = $this->app->server();
-        $host   = $server->host();
+        $server  = $this->app->server();
+        $visitor = $this->app->visitor();
+        $host    = $server->host();
 
         if ($host === 'localhost') {
-            return true;
-        }
-
-        if (in_array($server->address(), ['::1', '127.0.0.1', '0.0.0.0']) === true) {
-            return true;
-        }
-
-        if (Str::endsWith($host, '.dev') === true) {
             return true;
         }
 
@@ -209,6 +204,27 @@ class System
         }
 
         if (Str::endsWith($host, '.test') === true) {
+            return true;
+        }
+
+        if (in_array($visitor->ip(), ['::1', '127.0.0.1']) === true) {
+            // ensure that there is no reverse proxy in between
+
+            if (
+                isset($_SERVER['HTTP_X_FORWARDED_FOR']) === true &&
+                in_array($_SERVER['HTTP_X_FORWARDED_FOR'], ['::1', '127.0.0.1']) === false
+            ) {
+                return false;
+            }
+
+            if (
+                isset($_SERVER['HTTP_CLIENT_IP']) === true &&
+                in_array($_SERVER['HTTP_CLIENT_IP'], ['::1', '127.0.0.1']) === false
+            ) {
+                return false;
+            }
+
+            // no reverse proxy or the real client also comes from localhost
             return true;
         }
 
@@ -267,7 +283,9 @@ class System
      * Loads the license file and returns
      * the license information if available
      *
-     * @return string|false
+     * @return string|bool License key or `false` if the current user has
+     *                     permissions for access.settings, otherwise just a
+     *                     boolean that tells whether a valid license is active
      */
     public function license()
     {
@@ -312,7 +330,76 @@ class System
             return false;
         }
 
-        return $license['license'];
+        // only return the actual license key if the
+        // current user has appropriate permissions
+        $user = $this->app->user();
+        if ($user && $user->role()->permissions()->for('access', 'settings') === true) {
+            return $license['license'];
+        } else {
+            return true;
+        }
+    }
+
+    /**
+     * Returns the configured UI modes for the login form
+     * with their respective options
+     *
+     * @return array
+     *
+     * @throws \Kirby\Exception\InvalidArgumentException If the configuration is invalid
+     *                                                   (only in debug mode)
+     */
+    public function loginMethods(): array
+    {
+        $default = ['password' => []];
+        $methods = A::wrap($this->app->option('auth.methods', $default));
+
+        // normalize the syntax variants
+        $normalized = [];
+        $uses2fa = false;
+        foreach ($methods as $key => $value) {
+            if (is_int($key) === true) {
+                // ['password']
+                $normalized[$value] = [];
+            } elseif ($value === true) {
+                // ['password' => true]
+                $normalized[$key] = [];
+            } else {
+                // ['password' => [...]]
+                $normalized[$key] = $value;
+
+                if (isset($value['2fa']) === true && $value['2fa'] === true) {
+                    $uses2fa = true;
+                }
+            }
+        }
+
+        // 2FA must not be circumvented by code-based modes
+        foreach (['code', 'password-reset'] as $method) {
+            if ($uses2fa === true && isset($normalized[$method]) === true) {
+                unset($normalized[$method]);
+
+                if ($this->app->option('debug') === true) {
+                    $message = 'The "' . $method . '" login method cannot be enabled when 2FA is required';
+                    throw new InvalidArgumentException($message);
+                }
+            }
+        }
+
+        // only one code-based mode can be active at once
+        if (
+            isset($normalized['code']) === true &&
+            isset($normalized['password-reset']) === true
+        ) {
+            unset($normalized['code']);
+
+            if ($this->app->option('debug') === true) {
+                $message = 'The "code" and "password-reset" login methods cannot be enabled together';
+                throw new InvalidArgumentException($message);
+            }
+        }
+
+        return $normalized;
     }
 
     /**
@@ -342,7 +429,9 @@ class System
      */
     public function php(): bool
     {
-        return version_compare(phpversion(), '7.1.0', '>=');
+        return
+            version_compare(PHP_VERSION, '7.3.0', '>=') === true &&
+            version_compare(PHP_VERSION, '8.1.0', '<')  === true;
     }
 
     /**
@@ -350,9 +439,11 @@ class System
      * and adds it to the .license file in the config
      * folder if possible.
      *
-     * @param string $license
-     * @param string $email
+     * @param string|null $license
+     * @param string|null $email
      * @return bool
+     * @throws \Kirby\Exception\Exception
+     * @throws \Kirby\Exception\InvalidArgumentException
      */
     public function register(string $license = null, string $email = null): bool
     {
@@ -408,13 +499,17 @@ class System
      */
     public function server(): bool
     {
-        $servers = [
-            'apache',
-            'caddy',
-            'litespeed',
-            'nginx',
-            'php'
-        ];
+        if ($servers = $this->app->option('servers')) {
+            $servers = A::wrap($servers);
+        } else {
+            $servers = [
+                'apache',
+                'caddy',
+                'litespeed',
+                'nginx',
+                'php'
+            ];
+        }
 
         $software = $_SERVER['SERVER_SOFTWARE'] ?? null;
 

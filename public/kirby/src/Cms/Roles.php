@@ -24,6 +24,7 @@ class Roles extends Collection
      * current user
      *
      * @return self
+     * @throws \Exception
      */
     public function canBeChanged()
     {
@@ -47,6 +48,7 @@ class Roles extends Collection
      * current user
      *
      * @return self
+     * @throws \Exception
      */
     public function canBeCreated()
     {
@@ -85,11 +87,11 @@ class Roles extends Collection
         }
 
         // return the collection sorted by name
-        return $collection->sortBy('name', 'asc');
+        return $collection->sort('name', 'asc');
     }
 
     /**
-     * @param string $root
+     * @param string|null $root
      * @param array $inject
      * @return self
      */
@@ -132,6 +134,6 @@ class Roles extends Collection
         }
 
         // return the collection sorted by name
-        return $roles->sortBy('name', 'asc');
+        return $roles->sort('name', 'asc');
     }
 }

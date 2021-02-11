@@ -4,7 +4,6 @@ namespace Kirby\Cms;
 
 use Closure;
 use Kirby\Exception\DuplicateException;
-use Kirby\Exception\Exception;
 use Kirby\Exception\InvalidArgumentException;
 use Kirby\Exception\LogicException;
 use Kirby\Exception\NotFoundException;
@@ -24,12 +23,15 @@ use Kirby\Toolkit\Str;
 trait PageActions
 {
     /**
-     * Changes the sorting number
+     * Changes the sorting number.
      * The sorting number must already be correct
-     * when the method is called
+     * when the method is called.
+     * This only affects this page,
+     * siblings will not be resorted.
      *
-     * @param int $num
+     * @param int|null $num
      * @return self
+     * @throws \Kirby\Exception\LogicException If a draft is being sorted or the directory cannot be moved
      */
     public function changeNum(int $num = null)
     {
@@ -42,7 +44,7 @@ trait PageActions
             return $this;
         }
 
-        return $this->commit('changeNum', [$this, $num], function ($oldPage, $num) {
+        return $this->commit('changeNum', ['page' => $this, 'num' => $num], function ($oldPage, $num) {
             $newPage = $oldPage->clone([
                 'num'     => $num,
                 'dirname' => null,
@@ -74,8 +76,9 @@ trait PageActions
      * Changes the slug/uid of the page
      *
      * @param string $slug
-     * @param string $languageCode
+     * @param string|null $languageCode
      * @return self
+     * @throws \Kirby\Exception\LogicException If the directory cannot be moved
      */
     public function changeSlug(string $slug, string $languageCode = null)
     {
@@ -97,7 +100,8 @@ trait PageActions
             return $this;
         }
 
-        return $this->commit('changeSlug', [$this, $slug, $languageCode = null], function ($oldPage, $slug) {
+        $arguments = ['page' => $this, 'slug' => $slug, 'languageCode' => null];
+        return $this->commit('changeSlug', $arguments, function ($oldPage, $slug) {
             $newPage = $oldPage->clone([
                 'slug'    => $slug,
                 'dirname' => null,
@@ -136,8 +140,10 @@ trait PageActions
      * Change the slug for a specific language
      *
      * @param string $slug
-     * @param string $languageCode
+     * @param string|null $languageCode
      * @return self
+     * @throws \Kirby\Exception\NotFoundException If the language for the given language code cannot be found
+     * @throws \Kirby\Exception\InvalidArgumentException If the slug for the default language is being changed
      */
     protected function changeSlugForLanguage(string $slug, string $languageCode = null)
     {
@@ -151,7 +157,8 @@ trait PageActions
             throw new InvalidArgumentException('Use the changeSlug method to change the slug for the default language');
         }
 
-        return $this->commit('changeSlug', [$this, $slug, $languageCode], function ($page, $slug, $languageCode) {
+        $arguments = ['page' => $this, 'slug' => $slug, 'languageCode' => $languageCode];
+        return $this->commit('changeSlug', $arguments, function ($page, $slug, $languageCode) {
             // remove the slug if it's the same as the folder name
             if ($slug === $page->uid()) {
                 $slug = null;
@@ -163,11 +170,14 @@ trait PageActions
 
     /**
      * Change the status of the current page
-     * to either draft, listed or unlisted
+     * to either draft, listed or unlisted.
+     * If changing to `listed`, you can pass a position for the
+     * page in the siblings collection. Siblings will be resorted.
      *
      * @param string $status "draft", "listed" or "unlisted"
-     * @param int $position Optional sorting number
+     * @param int|null $position Optional sorting number
      * @return self
+     * @throws \Kirby\Exception\InvalidArgumentException If an invalid status is being passed
      */
     public function changeStatus(string $status, int $position = null)
     {
@@ -179,13 +189,17 @@ trait PageActions
             case 'unlisted':
                 return $this->changeStatusToUnlisted();
             default:
-                throw new Exception('Invalid status: ' . $status);
+                throw new InvalidArgumentException('Invalid status: ' . $status);
         }
     }
 
+    /**
+     * @return self
+     */
     protected function changeStatusToDraft()
     {
-        $page = $this->commit('changeStatus', [$this, 'draft', null], function ($page) {
+        $arguments = ['page' => $this, 'status' => 'draft', 'position' => null];
+        $page = $this->commit('changeStatus', $arguments, function ($page) {
             return $page->unpublish();
         });
 
@@ -193,7 +207,7 @@ trait PageActions
     }
 
     /**
-     * @param int $position
+     * @param int|null $position
      * @return self
      */
     protected function changeStatusToListed(int $position = null)
@@ -206,7 +220,8 @@ trait PageActions
             return $this;
         }
 
-        $page = $this->commit('changeStatus', [$this, 'listed', $num], function ($page, $status, $position) {
+        $arguments = ['page' => $this, 'status' => 'listed', 'position' => $num];
+        $page = $this->commit('changeStatus', $arguments, function ($page, $status, $position) {
             return $page->publish()->changeNum($position);
         });
 
@@ -226,7 +241,8 @@ trait PageActions
             return $this;
         }
 
-        $page = $this->commit('changeStatus', [$this, 'unlisted', null], function ($page) {
+        $arguments = ['page' => $this, 'status' => 'unlisted', 'position' => null];
+        $page = $this->commit('changeStatus', $arguments, function ($page) {
             return $page->publish()->changeNum(null);
         });
 
@@ -236,18 +252,32 @@ trait PageActions
     }
 
     /**
+     * Change the position of the page in its siblings
+     * collection. Siblings will be resorted. If the page
+     * status isn't yet `listed`, it will be changed to it.
+     *
+     * @param int|null $position
+     * @return self
+     */
+    public function changeSort(int $position = null)
+    {
+        return $this->changeStatus('listed', $position);
+    }
+
+    /**
      * Changes the page template
      *
      * @param string $template
      * @return self
+     * @throws \Kirby\Exception\LogicException If the textfile cannot be renamed/moved
      */
     public function changeTemplate(string $template)
     {
-        if ($template === $this->template()->name()) {
+        if ($template === $this->intendedTemplate()->name()) {
             return $this;
         }
 
-        return $this->commit('changeTemplate', [$this, $template], function ($oldPage, $template) {
+        return $this->commit('changeTemplate', ['page' => $this, 'template' => $template], function ($oldPage, $template) {
             if ($this->kirby()->multilang() === true) {
                 $newPage = $this->clone([
                     'template' => $template
@@ -290,7 +320,8 @@ trait PageActions
      */
     public function changeTitle(string $title, string $languageCode = null)
     {
-        return $this->commit('changeTitle', [$this, $title, $languageCode], function ($page, $title, $languageCode) {
+        $arguments = ['page' => $this, 'title' => $title, 'languageCode' => $languageCode];
+        return $this->commit('changeTitle', $arguments, function ($page, $title, $languageCode) {
             return $page->save(['title' => $title], $languageCode);
         });
     }
@@ -306,18 +337,32 @@ trait PageActions
      *
      * @param string $action
      * @param array $arguments
-     * @param Closure $callback
+     * @param \Closure $callback
      * @return mixed
      */
     protected function commit(string $action, array $arguments, Closure $callback)
     {
-        $old = $this->hardcopy();
+        $old            = $this->hardcopy();
+        $kirby          = $this->kirby();
+        $argumentValues = array_values($arguments);
 
-        $this->rules()->$action(...$arguments);
-        $this->kirby()->trigger('page.' . $action . ':before', ...$arguments);
-        $result = $callback(...$arguments);
-        $this->kirby()->trigger('page.' . $action . ':after', $result, $old);
-        $this->kirby()->cache('pages')->flush();
+        $this->rules()->$action(...$argumentValues);
+        $kirby->trigger('page.' . $action . ':before', $arguments);
+
+        $result = $callback(...$argumentValues);
+
+        if ($action === 'create') {
+            $argumentsAfter = ['page' => $result];
+        } elseif ($action === 'duplicate') {
+            $argumentsAfter = ['duplicatePage' => $result, 'originalPage' => $old];
+        } elseif ($action === 'delete') {
+            $argumentsAfter = ['status' => $result, 'page' => $old];
+        } else {
+            $argumentsAfter = ['newPage' => $result, 'oldPage' => $old];
+        }
+        $kirby->trigger('page.' . $action . ':after', $argumentsAfter);
+
+        $kirby->cache('pages')->flush();
         return $result;
     }
 
@@ -326,6 +371,7 @@ trait PageActions
      *
      * @param array $options
      * @return \Kirby\Cms\Page
+     * @throws \Kirby\Exception\DuplicateException If the page already exists
      */
     public function copy(array $options = [])
     {
@@ -356,7 +402,9 @@ trait PageActions
             'slug'    => $slug,
         ]);
 
-        $ignore = [];
+        $ignore = [
+            $this->kirby()->locks()->file($this)
+        ];
 
         // don't copy files
         if ($files === false) {
@@ -375,7 +423,7 @@ trait PageActions
         // remove all translated slugs
         if ($this->kirby()->multilang() === true) {
             foreach ($this->kirby()->languages() as $language) {
-                if ($language->isDefault() === false) {
+                if ($language->isDefault() === false && $copy->translation($language)->exists() === true) {
                     $copy = $copy->save(['slug' => null], $language->code());
                 }
             }
@@ -416,7 +464,7 @@ trait PageActions
         $page = $page->clone(['content' => $form->strings(true)]);
 
         // run the hooks and creation action
-        $page = $page->commit('create', [$page, $props], function ($page, $props) {
+        $page = $page->commit('create', ['page' => $page, 'input' => $props], function ($page, $props) {
 
             // always create pages in the default language
             if ($page->kirby()->multilang() === true) {
@@ -461,14 +509,15 @@ trait PageActions
             'site'   => $this->site(),
         ]);
 
-        return static::create($props);
+        $modelClass = Page::$models[$props['template']] ?? Page::class;
+        return $modelClass::create($props);
     }
 
     /**
      * Create the sorting number for the page
      * depending on the blueprint settings
      *
-     * @param int $num
+     * @param int|null $num
      * @return int
      */
     public function createNum(int $num = null): int
@@ -484,7 +533,9 @@ trait PageActions
                 $lang   = $this->kirby()->defaultLanguage() ?? null;
                 $field  = $this->content($lang)->get('date');
                 $date   = $field->isEmpty() ? 'now' : $field;
-                return date($format, strtotime($date));
+                // TODO: in 3.6.0 throw an error if date() doesn't
+                // return a number, see https://github.com/getkirby/kirby/pull/3061#discussion_r552783943
+                return (int)date($format, strtotime($date));
                 break;
             case 'default':
 
@@ -513,14 +564,14 @@ trait PageActions
                 return $num;
             default:
                 // get instance with default language
-                $app = $this->kirby()->clone();
+                $app = $this->kirby()->clone([], false);
                 $app->setCurrentLanguage();
 
                 $template = Str::template($mode, [
                     'kirby' => $app,
                     'page'  => $app->page($this->id()),
                     'site'  => $app->site(),
-                ]);
+                ], '');
 
                 return (int)$template;
         }
@@ -534,7 +585,7 @@ trait PageActions
      */
     public function delete(bool $force = false): bool
     {
-        return $this->commit('delete', [$this, $force], function ($page, $force) {
+        return $this->commit('delete', ['page' => $this, 'force' => $force], function ($page, $force) {
 
             // delete all files individually
             foreach ($page->files() as $file) {
@@ -581,7 +632,7 @@ trait PageActions
      * Duplicates the page with the given
      * slug and optionally copies all files
      *
-     * @param string $slug
+     * @param string|null $slug
      * @param array $options
      * @return \Kirby\Cms\Page
      */
@@ -591,7 +642,8 @@ trait PageActions
         // create the slug for the duplicate
         $slug = Str::slug($slug ?? $this->slug() . '-copy');
 
-        return $this->commit('duplicate', [$this, $slug, $options], function ($page, $slug, $options) {
+        $arguments = ['originalPage' => $this, 'input' => $slug, 'options' => $options];
+        return $this->commit('duplicate', $arguments, function ($page, $slug, $options) {
             return $this->copy([
                 'parent'   => $this->parent(),
                 'slug'     => $slug,
@@ -602,6 +654,10 @@ trait PageActions
         });
     }
 
+    /**
+     * @return self
+     * @throws \Kirby\Exception\LogicException If the folder cannot be moved
+     */
     public function publish()
     {
         if ($this->isDraft() === false) {
@@ -652,6 +708,11 @@ trait PageActions
         return $this;
     }
 
+    /**
+     * @param int|null $position
+     * @return bool
+     * @throws \Kirby\Exception\LogicException If the page is not included in the siblings collection
+     */
     protected function resortSiblingsAfterListing(int $position = null): bool
     {
         // get all siblings including the current page
@@ -693,11 +754,14 @@ trait PageActions
         }
 
         $parent = $this->parentModel();
-        $parent->children = $parent->children()->sortBy('num', 'asc');
+        $parent->children = $parent->children()->sort('num', 'asc');
 
         return true;
     }
 
+    /**
+     * @return bool
+     */
     public function resortSiblingsAfterUnlisting(): bool
     {
         $index    = 0;
@@ -716,14 +780,22 @@ trait PageActions
                 $sibling->changeNum($index);
             }
 
-            $parent->children = $siblings->sortBy('num', 'asc');
+            $parent->children = $siblings->sort('num', 'asc');
         }
 
         return true;
     }
 
+    /**
+     * @deprecated 3.5.0 Use `Page::changeSort()` instead
+     *
+     * @param null $position
+     * @return self
+     */
     public function sort($position = null)
     {
+        deprecated('$page->sort() is deprecated, use $page->changeSort() instead. $page->sort() will be removed in Kirby 3.6.0.');
+
         return $this->changeStatus('listed', $position);
     }
 
@@ -732,6 +804,7 @@ trait PageActions
      * unlisted to draft.
      *
      * @return self
+     * @throws \Kirby\Exception\LogicException If the folder cannot be moved
      */
     public function unpublish()
     {
@@ -765,18 +838,18 @@ trait PageActions
     /**
      * Updates the page data
      *
-     * @param array $input
-     * @param string $language
+     * @param array|null $input
+     * @param string|null $languageCode
      * @param bool $validate
      * @return self
      */
-    public function update(array $input = null, string $language = null, bool $validate = false)
+    public function update(array $input = null, string $languageCode = null, bool $validate = false)
     {
         if ($this->isDraft() === true) {
             $validate = false;
         }
 
-        $page = parent::update($input, $language, $validate);
+        $page = parent::update($input, $languageCode, $validate);
 
         // if num is created from page content, update num on content update
         if ($page->isListed() === true && in_array($page->blueprint()->num(), ['zero', 'default']) === false) {

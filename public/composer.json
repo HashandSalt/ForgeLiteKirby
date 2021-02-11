@@ -1,28 +1,26 @@
 {
-    "name": "getkirby/plainkit",
-    "description": "Kirby Plainkit",
+    "name": "hashandsalt/forge",
+    "description": "Forge: a boilerplate for Kirby",
     "type": "project",
-    "keywords": ["kirby", "cms", "starterkit"],
-    "homepage": "https://getkirby.com",
+    "keywords": [
+        "kirby",
+        "cms"
+    ],
+    "homepage": "https://hashandsalt.com",
     "authors": [
         {
-            "name": "Bastian Allgeier",
-            "email": "bastian@getkirby.com",
-            "homepage": "https://getkirby.com"
+            "name": "James Steel",
+            "email": "hello@hashandsalt.com",
+            "homepage": "https://hashandsalt.com"
         }
     ],
-    "support": {
-        "email": "support@getkirby.com",
-        "issues": "https://github.com/getkirby/starterkit/issues",
-        "forum": "https://forum.getkirby.com",
-        "source": "https://github.com/getkirby/starterkit"
-    },
     "require": {
         "php": ">=7.1.0",
-        "getkirby/cms": "^3.0",
+        "getkirby/cms": "^3.5.0",
         "hashandsalt/kirby3-seo": "^1.0",
         "hashandsalt/kirby3-schema": "^0.0.1",
-        "oblik/kirby-link-field": "^3.0"
+        "oblik/kirby-link-field": "^3.0",
+        "medienbaecker/autoresize": "^2.0"
     },
     "config": {
         "optimize-autoloader": true

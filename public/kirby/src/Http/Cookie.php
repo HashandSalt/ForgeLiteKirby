@@ -35,18 +35,19 @@ class Cookie
      * @param string $key The name of the cookie
      * @param string $value The cookie content
      * @param array $options Array of options:
-     *                       lifetime, path, domain, secure, httpOnly
+     *                       lifetime, path, domain, secure, httpOnly, sameSite
      * @return bool true: cookie was created,
      *              false: cookie creation failed
      */
     public static function set(string $key, string $value, array $options = []): bool
     {
         // extract options
-        $lifetime = $options['lifetime'] ?? 0;
+        $expires  = static::lifetime($options['lifetime'] ?? 0);
         $path     = $options['path']     ?? '/';
         $domain   = $options['domain']   ?? null;
         $secure   = $options['secure']   ?? false;
-        $httpOnly = $options['httpOnly'] ?? true;
+        $httponly = $options['httpOnly'] ?? true;
+        $samesite = $options['sameSite'] ?? 'Lax';
 
         // add an HMAC signature of the value
         $value = static::hmac($value) . '+' . $value;
@@ -55,7 +56,8 @@ class Cookie
         $_COOKIE[$key] = $value;
 
         // store the cookie
-        return setcookie($key, $value, static::lifetime($lifetime), $path, $domain, $secure, $httpOnly);
+        $options = compact('expires', 'path', 'domain', 'secure', 'httponly', 'samesite');
+        return setcookie($key, $value, $options);
     }
 
     /**
@@ -96,7 +98,8 @@ class Cookie
      */
     public static function forever(string $key, string $value, array $options = []): bool
     {
-        $options['lifetime'] = 253402214400; // 9999-12-31
+        // 9999-12-31 if supported (lower on 32-bit servers)
+        $options['lifetime'] = min(253402214400, PHP_INT_MAX);
         return static::set($key, $value, $options);
     }
 

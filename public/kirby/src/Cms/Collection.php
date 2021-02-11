@@ -3,7 +3,6 @@
 namespace Kirby\Cms;
 
 use Closure;
-use Exception;
 use Kirby\Exception\InvalidArgumentException;
 use Kirby\Toolkit\Collection as BaseCollection;
 use Kirby\Toolkit\Str;
@@ -45,7 +44,7 @@ class Collection extends BaseCollection
     public function __call(string $key, $arguments)
     {
         // collection methods
-        if ($this->hasMethod($key)) {
+        if ($this->hasMethod($key) === true) {
             return $this->callMethod($key, $arguments);
         }
     }
@@ -54,7 +53,7 @@ class Collection extends BaseCollection
      * Creates a new Collection with the given objects
      *
      * @param array $objects
-     * @param object $parent
+     * @param object|null $parent
      */
     public function __construct($objects = [], $parent = null)
     {
@@ -87,9 +86,9 @@ class Collection extends BaseCollection
      */
     public function add($object)
     {
-        if (is_a($object, static::class) === true) {
+        if (is_a($object, self::class) === true) {
             $this->data = array_merge($this->data, $object->data);
-        } elseif (method_exists($object, 'id') === true) {
+        } elseif (is_object($object) === true && method_exists($object, 'id') === true) {
             $this->__set($object->id(), $object);
         } else {
             $this->append($object);
@@ -101,6 +100,7 @@ class Collection extends BaseCollection
     /**
      * Appends an element to the data array
      *
+     * @param mixed ...$args
      * @param mixed $key Optional collection key, will be determined from the item if not given
      * @param mixed $item
      * @return \Kirby\Cms\Collection
@@ -120,44 +120,45 @@ class Collection extends BaseCollection
     }
 
     /**
-     * Groups the items by a given field. Returns a collection
+     * Groups the items by a given field or callback. Returns a collection
      * with an item for each group and a collection for each group.
      *
-     * @param string $field
+     * @param string|Closure $field
      * @param bool $i Ignore upper/lowercase for group names
      * @return \Kirby\Cms\Collection
+     * @throws \Kirby\Exception\Exception
      */
-    public function groupBy($field, bool $i = true)
+    public function group($field, bool $i = true)
     {
-        if (is_string($field) === false) {
-            throw new Exception('Cannot group by non-string values. Did you mean to call group()?');
+        if (is_string($field) === true) {
+            $groups = new Collection([], $this->parent());
+
+            foreach ($this->data as $key => $item) {
+                $value = $this->getAttribute($item, $field);
+
+                // make sure that there's always a proper value to group by
+                if (!$value) {
+                    throw new InvalidArgumentException('Invalid grouping value for key: ' . $key);
+                }
+
+                // ignore upper/lowercase for group names
+                if ($i) {
+                    $value = Str::lower($value);
+                }
+
+                if (isset($groups->data[$value]) === false) {
+                    // create a new entry for the group if it does not exist yet
+                    $groups->data[$value] = new static([$key => $item]);
+                } else {
+                    // add the item to an existing group
+                    $groups->data[$value]->set($key, $item);
+                }
+            }
+
+            return $groups;
         }
 
-        $groups = new Collection([], $this->parent());
-
-        foreach ($this->data as $key => $item) {
-            $value = $this->getAttribute($item, $field);
-
-            // make sure that there's always a proper value to group by
-            if (!$value) {
-                throw new InvalidArgumentException('Invalid grouping value for key: ' . $key);
-            }
-
-            // ignore upper/lowercase for group names
-            if ($i) {
-                $value = Str::lower($value);
-            }
-
-            if (isset($groups->data[$value]) === false) {
-                // create a new entry for the group if it does not exist yet
-                $groups->data[$value] = new static([$key => $item]);
-            } else {
-                // add the item to an existing group
-                $groups->data[$value]->set($key, $item);
-            }
-        }
-
-        return $groups;
+        return parent::group($field, $i);
     }
 
     /**
@@ -202,14 +203,19 @@ class Collection extends BaseCollection
     public function not(...$keys)
     {
         $collection = $this->clone();
+
         foreach ($keys as $key) {
-            if (is_a($key, 'Kirby\Toolkit\Collection') === true) {
+            if (is_array($key) === true) {
+                return $this->not(...$key);
+            } elseif (is_a($key, 'Kirby\Toolkit\Collection') === true) {
                 $collection = $collection->not(...$key->keys());
             } elseif (is_object($key) === true) {
                 $key = $key->id();
             }
-            unset($collection->$key);
+
+            unset($collection->{$key});
         }
+
         return $collection;
     }
 
@@ -240,6 +246,7 @@ class Collection extends BaseCollection
     /**
      * Prepends an element to the data array
      *
+     * @param mixed ...$args
      * @param mixed $key Optional collection key, will be determined from the item if not given
      * @param mixed $item
      * @return \Kirby\Cms\Collection
@@ -259,7 +266,7 @@ class Collection extends BaseCollection
     }
 
     /**
-     * Runs a combination of filterBy, sortBy, not
+     * Runs a combination of filter, sort, not,
      * offset, limit, search and paginate on the collection.
      * Any part of the query is optional.
      *
@@ -307,7 +314,7 @@ class Collection extends BaseCollection
     /**
      * Searches the collection
      *
-     * @param string $query
+     * @param string|null $query
      * @param array $params
      * @return self
      */
@@ -321,7 +328,7 @@ class Collection extends BaseCollection
      * to an array. This can also take a callback
      * function to further modify the array result.
      *
-     * @param Closure $map
+     * @param \Closure|null $map
      * @return array
      */
     public function toArray(Closure $map = null): array

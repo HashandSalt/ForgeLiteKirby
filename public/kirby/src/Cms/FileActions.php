@@ -26,6 +26,7 @@ trait FileActions
      * @param string $name
      * @param bool $sanitize
      * @return self
+     * @throws \Kirby\Exception\LogicException
      */
     public function changeName(string $name, bool $sanitize = true)
     {
@@ -38,7 +39,7 @@ trait FileActions
             return $this;
         }
 
-        return $this->commit('changeName', [$this, $name], function ($oldFile, $name) {
+        return $this->commit('changeName', ['file' => $this, 'name' => $name], function ($oldFile, $name) {
             $newFile = $oldFile->clone([
                 'filename' => $name . '.' . $oldFile->extension(),
             ]);
@@ -87,7 +88,7 @@ trait FileActions
      */
     public function changeSort(int $sort)
     {
-        return $this->commit('changeSort', [$this, $sort], function ($file, $sort) {
+        return $this->commit('changeSort', ['file' => $this, 'position' => $sort], function ($file, $sort) {
             return $file->save(['sort' => $sort]);
         });
     }
@@ -108,13 +109,24 @@ trait FileActions
      */
     protected function commit(string $action, array $arguments, Closure $callback)
     {
-        $old   = $this->hardcopy();
-        $kirby = $this->kirby();
+        $old            = $this->hardcopy();
+        $kirby          = $this->kirby();
+        $argumentValues = array_values($arguments);
 
-        $this->rules()->$action(...$arguments);
-        $kirby->trigger('file.' . $action . ':before', ...$arguments);
-        $result = $callback(...$arguments);
-        $kirby->trigger('file.' . $action . ':after', $result, $old);
+        $this->rules()->$action(...$argumentValues);
+        $kirby->trigger('file.' . $action . ':before', $arguments);
+
+        $result = $callback(...$argumentValues);
+
+        if ($action === 'create') {
+            $argumentsAfter = ['file' => $result];
+        } elseif ($action === 'delete') {
+            $argumentsAfter = ['status' => $result, 'file' => $old];
+        } else {
+            $argumentsAfter = ['newFile' => $result, 'oldFile' => $old];
+        }
+        $kirby->trigger('file.' . $action . ':after', $argumentsAfter);
+
         $kirby->cache('pages')->flush();
         return $result;
     }
@@ -150,6 +162,8 @@ trait FileActions
      *
      * @param array $props
      * @return self
+     * @throws \Kirby\Exception\InvalidArgumentException
+     * @throws \Kirby\Exception\LogicException
      */
     public static function create(array $props)
     {
@@ -175,7 +189,7 @@ trait FileActions
         $file = $file->clone(['content' => $form->strings(true)]);
 
         // run the hook
-        return $file->commit('create', [$file, $upload], function ($file, $upload) {
+        return $file->commit('create', compact('file', 'upload'), function ($file, $upload) {
 
             // delete all public versions
             $file->unpublish();
@@ -211,7 +225,7 @@ trait FileActions
      */
     public function delete(): bool
     {
-        return $this->commit('delete', [$this], function ($file) {
+        return $this->commit('delete', ['file' => $this], function ($file) {
 
             // remove all versions in the media folder
             $file->unpublish();
@@ -231,6 +245,9 @@ trait FileActions
 
             F::remove($file->root());
 
+            // remove the file from the sibling collection
+            $file->parent()->files()->remove($file);
+
             return true;
         });
     }
@@ -243,22 +260,8 @@ trait FileActions
      */
     public function publish()
     {
-        Media::publish($this->root(), $this->mediaRoot());
+        Media::publish($this, $this->mediaRoot());
         return $this;
-    }
-
-    /**
-     * @deprecated 3.0.0 Use `File::changeName()` instead
-     *
-     * @param string $name
-     * @param bool $sanitize
-     * @return self
-     */
-    public function rename(string $name, bool $sanitize = true)
-    {
-        deprecated('$file->rename() is deprecated, use $file->changeName() instead. $file->rename() will be removed in Kirby 3.5.0.');
-
-        return $this->changeName($name, $sanitize);
     }
 
     /**
@@ -270,10 +273,11 @@ trait FileActions
      *
      * @param string $source
      * @return self
+     * @throws \Kirby\Exception\LogicException
      */
     public function replace(string $source)
     {
-        return $this->commit('replace', [$this, new Image($source)], function ($file, $upload) {
+        return $this->commit('replace', ['file' => $this, 'upload' => new Image($source)], function ($file, $upload) {
 
             // delete all public versions
             $file->unpublish();
@@ -295,7 +299,7 @@ trait FileActions
      */
     public function unpublish()
     {
-        Media::unpublish($this->parent()->mediaRoot(), $this->filename());
+        Media::unpublish($this->parent()->mediaRoot(), $this);
         return $this;
     }
 }
