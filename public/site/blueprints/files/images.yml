@@ -10,7 +10,7 @@ tabs:
     icon:              text
     columns:
 
-      # main
+      # LEFT COLUMN
       left:
         width:         2/3
         sections:
@@ -24,11 +24,10 @@ tabs:
                 label: Caption
                 type:  textarea
 
-      # sidebar
+      # RIGHT COLUMN
       right:
         width:         1/3
         sections:
-          # a list of files
           feature:
             type:      fields
             fields:

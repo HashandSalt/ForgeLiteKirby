@@ -2,7 +2,7 @@
 
 namespace Kirby\Data;
 
-use Exception;
+use Kirby\Exception\Exception;
 use Kirby\Toolkit\F;
 
 /**
@@ -23,7 +23,7 @@ abstract class Handler
      *
      * Needs to throw an Exception if the file can't be parsed.
      *
-     * @param string $string
+     * @param mixed $string
      * @return array
      */
     abstract public static function decode($string): array;
@@ -44,21 +44,22 @@ abstract class Handler
      */
     public static function read(string $file): array
     {
-        if (is_file($file) !== true) {
+        $contents = F::read($file);
+        if ($contents === false) {
             throw new Exception('The file "' . $file . '" does not exist');
         }
 
-        return static::decode(F::read($file));
+        return static::decode($contents);
     }
 
     /**
      * Writes data to a file
      *
      * @param string $file
-     * @param array $data
+     * @param mixed $data
      * @return bool
      */
-    public static function write(string $file = null, array $data = []): bool
+    public static function write(string $file = null, $data = []): bool
     {
         return F::write($file, static::encode($data));
     }

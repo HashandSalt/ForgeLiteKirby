@@ -66,7 +66,7 @@ class Dimensions
      * Crops the dimensions by width and height
      *
      * @param int $width
-     * @param int $height
+     * @param int|null $height
      * @return self
      */
     public function crop(int $width, int $height = null)
@@ -114,7 +114,7 @@ class Dimensions
      */
     public function fit(int $box, bool $force = false)
     {
-        if ($this->width == 0 || $this->height == 0) {
+        if ($this->width === 0 || $this->height === 0) {
             $this->width  = $box;
             $this->height = $box;
             return $this;
@@ -159,7 +159,7 @@ class Dimensions
      *
      * </code>
      *
-     * @param int $fit the max height
+     * @param int|null $fit the max height
      * @param bool $force If true, the dimensions will be
      *                    upscaled to fit the box if smaller
      * @return self object with recalculated dimensions
@@ -173,7 +173,7 @@ class Dimensions
      * Helper for fitWidth and fitHeight methods
      *
      * @param string $ref reference (width or height)
-     * @param int $fit the max width
+     * @param int|null $fit the max width
      * @param bool $force If true, the dimensions will be
      *                    upscaled to fit the box if smaller
      * @return self object with recalculated dimensions
@@ -212,7 +212,7 @@ class Dimensions
      *
      * </code>
      *
-     * @param int $fit the max width
+     * @param int|null $fit the max width
      * @param bool $force If true, the dimensions will be
      *                    upscaled to fit the box if smaller
      * @return self object with recalculated dimensions
@@ -225,8 +225,8 @@ class Dimensions
     /**
      * Recalculates the dimensions by the width and height
      *
-     * @param int $width the max height
-     * @param int $height the max width
+     * @param int|null $width the max height
+     * @param int|null $height the max width
      * @param bool $force
      * @return self
      */
@@ -362,8 +362,8 @@ class Dimensions
     }
 
     /**
-     * @param int $width
-     * @param int $height
+     * @param int|null $width
+     * @param int|null $height
      * @param bool $force
      * @return self
      */
@@ -379,7 +379,7 @@ class Dimensions
      */
     public function square(): bool
     {
-        return $this->width == $this->height;
+        return $this->width === $this->height;
     }
 
     /**

@@ -38,7 +38,7 @@ class Blueprint
      * Magic getter/caller for any blueprint prop
      *
      * @param string $key
-     * @param array $arguments
+     * @param array|null $arguments
      * @return mixed
      */
     public function __call(string $key, array $arguments = null)
@@ -50,6 +50,7 @@ class Blueprint
      * Creates a new blueprint object with the given props
      *
      * @param array $props
+     * @throws \Kirby\Exception\InvalidArgumentException If the blueprint model is missing
      */
     public function __construct(array $props)
     {
@@ -200,6 +201,7 @@ class Blueprint
 
         try {
             $mixin = static::find($extends);
+            $mixin = static::extend($mixin);
             $props = A::merge($mixin, $props, A::MERGE_REPLACE);
         } catch (Exception $e) {
             // keep the props unextended if the snippet wasn't found
@@ -215,7 +217,7 @@ class Blueprint
      * Create a new blueprint for a model
      *
      * @param string $name
-     * @param string $fallback
+     * @param string|null $fallback
      * @param \Kirby\Cms\Model $model
      * @return self
      */
@@ -263,6 +265,7 @@ class Blueprint
      *
      * @param string $name
      * @return array
+     * @throws \Kirby\Exception\NotFoundException If the blueprint cannot be found
      */
     public static function find(string $name): array
     {
@@ -372,7 +375,9 @@ class Blueprint
     protected function normalizeColumns(string $tabName, array $columns): array
     {
         foreach ($columns as $columnKey => $columnProps) {
+            // unset/remove column if its property is not array
             if (is_array($columnProps) === false) {
+                unset($columns[$columnKey]);
                 continue;
             }
 
@@ -398,6 +403,10 @@ class Blueprint
         return $columns;
     }
 
+    /**
+     * @param array $items
+     * @return string
+     */
     public static function helpList(array $items): string
     {
         $md = [];
@@ -414,6 +423,7 @@ class Blueprint
      *
      * @param array|string $props
      * @return array
+     * @throws \Kirby\Exception\InvalidArgumentException If the filed name is missing or the field type is invalid
      */
     public static function fieldProps($props): array
     {
@@ -499,7 +509,7 @@ class Blueprint
                 $fieldProps = [];
             }
 
-            // unset / remove field if its propperty is false
+            // unset / remove field if its property is false
             if ($fieldProps === false) {
                 unset($fields[$fieldName]);
                 continue;
@@ -582,7 +592,7 @@ class Blueprint
     {
         foreach ($sections as $sectionName => $sectionProps) {
 
-            // unset / remove section if its propperty is false
+            // unset / remove section if its property is false
             if ($sectionProps === false) {
                 unset($sections[$sectionName]);
                 continue;
@@ -668,7 +678,7 @@ class Blueprint
 
         foreach ($tabs as $tabName => $tabProps) {
 
-            // unset / remove tab if its propperty is false
+            // unset / remove tab if its property is false
             if ($tabProps === false) {
                 unset($tabs[$tabName]);
                 continue;

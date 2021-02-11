@@ -179,7 +179,7 @@ class Str
         $position = static::position($string, $needle, $caseInsensitive);
 
         if ($position === false) {
-            return false;
+            return '';
         } else {
             return static::substr($string, $position + static::length($needle));
         }
@@ -221,7 +221,7 @@ class Str
         $position = static::position($string, $needle, $caseInsensitive);
 
         if ($position === false) {
-            return false;
+            return '';
         } else {
             return static::substr($string, 0, $position);
         }
@@ -289,7 +289,7 @@ class Str
         for ($i = 0; $i < static::length($string); $i++) {
             $char = static::substr($string, $i, 1);
             list(, $code) = unpack('N', mb_convert_encoding($char, 'UCS-4BE', 'UTF-8'));
-            $encoded .= rand(1, 2) == 1 ? '&#' . $code . ';' : '&#x' . dechex($code) . ';';
+            $encoded .= rand(1, 2) === 1 ? '&#' . $code . ';' : '&#x' . dechex($code) . ';';
         }
 
         return $encoded;
@@ -341,7 +341,7 @@ class Str
      * @param string $rep The element, which should be added if the string is too long. Ellipsis is the default.
      * @return string The shortened string
      */
-    public static function excerpt($string, $chars = 140, $strip = true, $rep = '…')
+    public static function excerpt($string, $chars = 140, $strip = true, $rep = ' …')
     {
         if ($strip === true) {
             $string = strip_tags(str_replace('<', ' <', $string));
@@ -361,7 +361,7 @@ class Str
             return $string;
         }
 
-        return static::substr($string, 0, mb_strrpos(static::substr($string, 0, $chars), ' ')) . ' ' . $rep;
+        return static::substr($string, 0, mb_strrpos(static::substr($string, 0, $chars), ' ')) . $rep;
     }
 
     /**
@@ -396,7 +396,7 @@ class Str
         $position = static::position($string, $needle, $caseInsensitive);
 
         if ($position === false) {
-            return false;
+            return '';
         } else {
             return static::substr($string, $position);
         }
@@ -410,7 +410,7 @@ class Str
      */
     public static function isURL(string $string = null): bool
     {
-        return filter_var($string, FILTER_VALIDATE_URL);
+        return filter_var($string, FILTER_VALIDATE_URL) !== false;
     }
 
     /**
@@ -748,8 +748,12 @@ class Str
      *                         string is too long. Ellipsis is the default.
      * @return string The shortened string
      */
-    public static function short(string $string = null, int $length = 0, string $appendix = '…'): ?string
+    public static function short(string $string = null, int $length = 0, string $appendix = '…'): string
     {
+        if ($string === null) {
+            return '';
+        }
+
         if ($length === 0) {
             return $string;
         }
@@ -797,6 +801,78 @@ class Str
 
         // cut the string after the given maxlength
         return static::short($string, $maxlength, false);
+    }
+
+    /**
+     * Calculates the similarity between two strings with multibyte support
+     *
+     * @author Based on the work of Antal Áron
+     * @copyright Original Copyright (c) 2017, Antal Áron
+     * @license https://github.com/antalaron/mb-similar-text/blob/master/LICENSE MIT License
+     * @param string $first
+     * @param string $second
+     * @param bool $caseInsensitive If `true`, strings are compared case-insensitively
+     * @return array matches: Number of matching chars in both strings
+     *               percent: Similarity in percent
+     */
+    public static function similarity(string $first, string $second, bool $caseInsensitive = false): array
+    {
+        $matches = 0;
+        $percent = 0.0;
+
+        if ($caseInsensitive === true) {
+            $first  = static::lower($first);
+            $second = static::lower($second);
+        }
+
+        if (static::length($first) + static::length($second) > 0) {
+            $pos1 = $pos2 = $max = 0;
+            $len1 = static::length($first);
+            $len2 = static::length($second);
+
+            for ($p = 0; $p < $len1; ++$p) {
+                for ($q = 0; $q < $len2; ++$q) {
+                    for (
+                        $l = 0;
+                        ($p + $l < $len1) && ($q + $l < $len2) &&
+                        static::substr($first, $p + $l, 1) === static::substr($second, $q + $l, 1);
+                        ++$l
+                    ) {
+                        // nothing to do
+                    }
+
+                    if ($l > $max) {
+                        $max  = $l;
+                        $pos1 = $p;
+                        $pos2 = $q;
+                    }
+                }
+            }
+
+            $matches = $max;
+
+            if ($matches) {
+                if ($pos1 && $pos2) {
+                    $similarity = static::similarity(
+                        static::substr($first, 0, $pos1),
+                        static::substr($second, 0, $pos2)
+                    );
+                    $matches += $similarity['matches'];
+                }
+
+                if (($pos1 + $max < $len1) && ($pos2 + $max < $len2)) {
+                    $similarity = static::similarity(
+                        static::substr($first, $pos1 + $max, $len1 - $pos1 - $max),
+                        static::substr($second, $pos2 + $max, $len2 - $pos2 - $max)
+                    );
+                    $matches += $similarity['matches'];
+                }
+            }
+
+            $percent = ($matches * 200.0) / ($len1 + $len2);
+        }
+
+        return compact('matches', 'percent');
     }
 
     /**
@@ -897,10 +973,25 @@ class Str
     {
         return preg_replace_callback('!' . $start . '(.*?)' . $end . '!', function ($match) use ($data, $fallback) {
             $query = trim($match[1]);
+
+            // if the placeholder contains a dot, it is a query
             if (strpos($query, '.') !== false) {
-                return (new Query($match[1], $data))->result() ?? $fallback;
+                try {
+                    $result = (new Query($match[1], $data))->result();
+                } catch (Exception $e) {
+                    $result = null;
+                }
+            } else {
+                $result = $data[$query] ?? null;
             }
-            return $data[$query] ?? $fallback;
+
+            // if we don't have a result, use the fallback if given
+            if ($result === null && $fallback !== null) {
+                $result = $fallback;
+            }
+
+            // if we still don't have a result, keep the original placeholder
+            return $result ?? $match[0];
         }, $string);
     }
 
@@ -938,7 +1029,7 @@ class Str
      * @param mixed $type
      * @return mixed
      */
-    public static function toType($string = null, $type)
+    public static function toType($string, $type)
     {
         if (is_string($type) === false) {
             $type = gettype($type);
@@ -1026,7 +1117,7 @@ class Str
         $position = static::position($string, $needle, $caseInsensitive);
 
         if ($position === false) {
-            return false;
+            return '';
         } else {
             return static::substr($string, 0, $position + static::length($needle));
         }

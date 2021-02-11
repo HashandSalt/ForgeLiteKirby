@@ -2,11 +2,11 @@
 
 namespace Kirby\Data;
 
-use Exception;
+use Kirby\Exception\InvalidArgumentException;
 use Spyc;
 
 /**
- * Simple Wrapper around Symfony's Yaml Component
+ * Simple Wrapper around the Spyc YAML class
  *
  * @package   Kirby Data
  * @author    Bastian Allgeier <bastian@getkirby.com>
@@ -24,6 +24,9 @@ class Yaml extends Handler
      */
     public static function encode($data): string
     {
+        // TODO: The locale magic should no longer be
+        //       necessary when support for PHP 7.x is dropped
+
         // fetch the current locale setting for numbers
         $locale = setlocale(LC_NUMERIC, 0);
 
@@ -42,29 +45,33 @@ class Yaml extends Handler
     /**
      * Parses an encoded YAML string and returns a multi-dimensional array
      *
-     * @param string $yaml
+     * @param mixed $string
      * @return array
      */
-    public static function decode($yaml): array
+    public static function decode($string): array
     {
-        if ($yaml === null) {
+        if ($string === null) {
             return [];
         }
 
-        if (is_array($yaml) === true) {
-            return $yaml;
+        if (is_array($string) === true) {
+            return $string;
+        }
+
+        if (is_string($string) === false) {
+            throw new InvalidArgumentException('Invalid YAML data; please pass a string');
         }
 
         // remove BOM
-        $yaml   = str_replace("\xEF\xBB\xBF", '', $yaml);
-        $result = Spyc::YAMLLoadString($yaml);
+        $string = str_replace("\xEF\xBB\xBF", '', $string);
+        $result = Spyc::YAMLLoadString($string);
 
         if (is_array($result)) {
             return $result;
         } else {
             // apparently Spyc always returns an array, even for invalid YAML syntax
             // so this Exception should currently never be thrown
-            throw new Exception('YAML string is invalid'); // @codeCoverageIgnore
+            throw new InvalidArgumentException('The YAML data cannot be parsed'); // @codeCoverageIgnore
         }
     }
 }

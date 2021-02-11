@@ -4,6 +4,48 @@
 
 
 footer {
+  background-color: $jet;
+}
+
+.footer-inner {
   @include container;
-  text-align: center;
+
+  padding: rem(12px) 0;
+
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr;
+  row-gap: rem(12px);
+
+  @include media("<medium") {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 1fr;
+  }
+
+
+  .menu-list {
+    justify-content: flex-start;
+
+    @include media("<medium") {
+      justify-content: center;
+    }
+  }
+
+  .copy {
+    text-align: right;
+
+    @include media("<medium") {
+      text-align: center;
+    }
+  }
+
+
+  p,
+  a {
+    @include type-free($base-font-size, 0, 0px, 24px, true);
+    color: $bright;
+    font-weight: $semibold;
+    text-transform: uppercase;
+  }
+
 }

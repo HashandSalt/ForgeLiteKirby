@@ -2,6 +2,61 @@
 // 06-components - Forms
 // ======================================================================
 
-form {
+.form {
   @include form-complete;
+
+  .input-image {
+    width: rem(100px);
+    height: rem(45px);
+    margin: rem(12px) 0 0;
+  }
+
+  [type="range"] {
+    margin: rem(16px) 0 0;
+  }
+}
+
+.form-elements {
+  display: grid;
+  grid-column-gap: rem(24px);
+  grid-row-gap: rem(24px);
+  grid-template-columns: 1fr;
+  @include minbreak($bp-medium) {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto;
+  }
+  @include minbreak($bp-large) {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto;
+  }
+
+  .form-input {
+    line-height: 0;
+
+    span {
+      display: block;
+      @include type-free(21px, 24px, 24px, 24px, true);
+    }
+  }
+
+  .choices {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+}
+
+.radios {
+  @include checkradio();
+}
+
+.error-box {
+  border: 1px solid $negative;
+  background-color: lighten($negative, 60%);
+  padding: rem(8px);
+  color: $negative;
+
+  p {
+    @include type-free($base-font-size, 0, 0, 24px, true);
+  }
 }

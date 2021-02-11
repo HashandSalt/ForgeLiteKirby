@@ -27,7 +27,7 @@ return [
         'pattern' => '(:all)/files',
         'method'  => 'GET',
         'action'  => function (string $path) {
-            return $this->parent($path)->files()->sortBy('sort', 'asc', 'filename', 'asc');
+            return $this->parent($path)->files()->sort('sort', 'asc', 'filename', 'asc');
         }
     ],
     [
@@ -103,5 +103,21 @@ return [
             return $this->file($path, $filename)->changeName($this->requestBody('name'));
         }
     ],
+    [
+        'pattern' => 'files/search',
+        'method'  => 'GET|POST',
+        'action'  => function () {
+            $files = $this
+                ->site()
+                ->index(true)
+                ->filter('isReadable', true)
+                ->files();
 
+            if ($this->requestMethod() === 'GET') {
+                return $files->search($this->requestQuery('q'));
+            } else {
+                return $files->query($this->requestBody());
+            }
+        }
+    ],
 ];

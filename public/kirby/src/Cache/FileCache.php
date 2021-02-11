@@ -68,7 +68,7 @@ class FileCache extends Cache
      */
     protected function file(string $key): string
     {
-        $file = $this->root . '/' . $key;
+        $file = $this->root . '/' . basename($key);
 
         if (isset($this->options['extension'])) {
             return $file . '.' . $this->options['extension'];
@@ -107,9 +107,10 @@ class FileCache extends Cache
      */
     public function retrieve(string $key)
     {
-        $file = $this->file($key);
+        $file  = $this->file($key);
+        $value = F::read($file);
 
-        return Value::fromJson(F::read($file));
+        return $value ? Value::fromJson($value) : null;
     }
 
     /**

@@ -1,16 +1,15 @@
 {
-  "name": "forgelite",
-  "version": "0.0.1",
-  "description": "A boilerplate for Kirby CMS",
+  "name": "forge",
+  "version": "2.0.0",
+  "description": "A boilerplate for Kirby CMS & Slate",
   "author": "Hash&Salt",
   "email": "hello@hashandsalt.com",
   "license": "MIT",
   "config": {
     "webpack": "node_modules/laravel-mix/setup/webpack.config.js",
-    "content": "./public/content",
-    "thumbs": "./public/media",
-    "assets": "public/assets/images",
-    "favout": "public/assets/favicon"
+    "favout": "public/assets/favicon",
+    "speeddevurl": "http://forge.test",
+    "speedliveurl": "http://forge.test"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -18,33 +17,26 @@
     "dev": "cross-env NODE_ENV=development webpack --progress --hide-modules --config=$npm_package_config_webpack",
     "watch": "cross-env NODE_ENV=development webpack --watch --progress --hide-modules --config=$npm_package_config_webpack",
     "production": "cross-env NODE_ENV=production webpack --progress --hide-modules --config=$npm_package_config_webpack",
-    "images:assets:min": "imageoptim $npm_package_config_assets && find $npm_package_config_assets -name '*.svg' -type f -exec svgo  {} \\;",
-    "favicon": "real-favicon generate faviconDescription.json faviconData.json $npm_package_config_favout",
-    "favicon:update": "real-favicon check-for-update --fail-on-update faviconData.json",
-    "favicon:min": "imageoptim -d $npm_package_config_favout && find $npm_package_config_favout -name '*.svg' -type f -exec svgo  {} \\;",
     "deploy:live:sim": "./deploy live",
     "deploy:live": "./deploy live go",
     "deploy:staging:sim": "./deploy staging",
     "deploy:staging": "./deploy staging go",
     "content:sync:sim": "./deploy sync",
-    "content:sync": "./deploy sync go"
+    "content:sync": "./deploy sync go",
+    "favicon": "real-favicon generate ./config/faviconDescription.json ./config/faviconData.json $npm_package_config_favout",
+    "favicon-inject": "real-favicon inject ./config/faviconData.json ./config/ config/*.html",
+    "sitespeed:dev": "sitespeed.io $npm_package_config_speeddevurl -b chrome",
+    "sitespeed:live": "sitespeed.io $npm_package_config_speedliveurl -b chrome"
   },
   "devDependencies": {
-    "browser-sync": "^2.26.5",
-    "browser-sync-webpack-plugin": "2.0.1",
-    "cross-env": "^5.2.0",
-    "css-mqpacker": "^7.0.0",
-    "favicons-webpack-plugin": "^0.0.9",
-    "ga-lite": "^2.0.5",
-    "glob-all": "^3.1.0",
-    "laravel-mix": "^4.0.16",
-    "laravel-mix-purgecss": "^4.1.0",
-    "sass": "^1.20.3",
-    "sass-loader": "7.*",
-    "vue-template-compiler": "^2.6.10"
-  },
-  "dependencies": {
     "@slateengine/slatesass": "^8.0.5",
-    "@slateengine/slatesasskits": "^8.0.7"
+    "@slateengine/slatesasskits": "^8.0.7",
+    "browser-sync": "^2.26.13",
+    "browser-sync-webpack-plugin": "^2.0.1",
+    "cross-env": "^7.0.2",
+    "laravel-mix": "^5.0.7",
+    "sass": "^1.27.0",
+    "sass-loader": "^8.0.2",
+    "vue-template-compiler": "^2.6.12"
   }
 }

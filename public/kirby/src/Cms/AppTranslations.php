@@ -2,9 +2,8 @@
 
 namespace Kirby\Cms;
 
-use Kirby\Data\Data;
-use Kirby\Toolkit\F;
 use Kirby\Toolkit\I18n;
+use Kirby\Toolkit\Locale;
 use Kirby\Toolkit\Str;
 
 /**
@@ -35,17 +34,18 @@ trait AppTranslations
             }
 
             // inject translations from the current language
-            if ($this->multilang() === true && $language = $this->languages()->find($locale)) {
+            if (
+                $this->multilang() === true &&
+                $language = $this->languages()->find($locale)
+            ) {
                 $data = array_merge($data, $language->translations());
-
-                // Add language slug rules to Str class
-                Str::$language = $language->rules();
             }
 
 
             return $data;
         };
 
+        // the actual locale is set using $app->setCurrentTranslation()
         I18n::$locale = function (): string {
             if ($this->multilang() === true) {
                 return $this->defaultLanguage()->code();
@@ -54,29 +54,62 @@ trait AppTranslations
             }
         };
 
-        I18n::$fallback = function (): string {
+        I18n::$fallback = function (): array {
             if ($this->multilang() === true) {
-                return $this->defaultLanguage()->code();
+                // first try to fall back to the configured default language
+                $defaultCode = $this->defaultLanguage()->code();
+                $fallback = [$defaultCode];
+
+                // if the default language is specified with a country code
+                // (e.g. `en-us`), also try with just the language code
+                if (preg_match('/^([a-z]{2})-[a-z]+$/i', $defaultCode, $matches) === 1) {
+                    $fallback[] = $matches[1];
+                }
+
+                // fall back to the complete English translation
+                // as a last resort
+                $fallback[] = 'en';
+
+                return $fallback;
             } else {
-                return 'en';
+                return ['en'];
             }
         };
 
         I18n::$translations = [];
 
-        if (isset($this->options['slugs']) === true) {
-            $file = $this->root('i18n:rules') . '/' . $this->options['slugs'] . '.json';
-
-            if (F::exists($file) === true) {
-                try {
-                    $data = Data::read($file);
-                } catch (\Exception $e) {
-                    $data = [];
-                }
-
-                Str::$language = $data;
+        // add slug rules based on config option
+        if ($slugs = $this->option('slugs')) {
+            // two ways that the option can be defined:
+            // "slugs" => "de" or "slugs" => ["language" => "de"]
+            if ($slugs = $slugs['language'] ?? $slugs ?? null) {
+                Str::$language = Language::loadRules($slugs);
             }
         }
+    }
+
+    /**
+     * Returns the language code that will be used
+     * for the Panel if no user is logged in or if
+     * no language is configured for the user
+     *
+     * @return string
+     */
+    public function panelLanguage(): string
+    {
+        if ($this->multilang() === true) {
+            $defaultCode = $this->defaultLanguage()->code();
+
+            // extract the language code from a language that
+            // contains the country code (e.g. `en-us`)
+            if (preg_match('/^([a-z]{2})-[a-z]+$/i', $defaultCode, $matches) === 1) {
+                $defaultCode = $matches[1];
+            }
+        } else {
+            $defaultCode = 'en';
+        }
+
+        return $this->option('panel.language', $defaultCode);
     }
 
     /**
@@ -84,13 +117,13 @@ trait AppTranslations
      * Otherwise fall back to the default language
      *
      * @internal
-     * @param string $languageCode
+     * @param string|null $languageCode
      * @return \Kirby\Cms\Language|null
      */
     public function setCurrentLanguage(string $languageCode = null)
     {
         if ($this->multilang() === false) {
-            $this->setLocale($this->option('locale', 'en_US.utf-8'));
+            Locale::set($this->option('locale', 'en_US.utf-8'));
             return $this->language = null;
         }
 
@@ -101,8 +134,11 @@ trait AppTranslations
         }
 
         if ($this->language) {
-            $this->setLocale($this->language->locale());
+            Locale::set($this->language->locale());
         }
+
+        // add language slug rules to Str class
+        Str::$language = $this->language->rules();
 
         return $this->language;
     }
@@ -111,7 +147,7 @@ trait AppTranslations
      * Set the current translation
      *
      * @internal
-     * @param string $translationCode
+     * @param string|null $translationCode
      * @return void
      */
     public function setCurrentTranslation(string $translationCode = null): void
@@ -122,27 +158,22 @@ trait AppTranslations
     /**
      * Set locale settings
      *
-     * @internal
+     * @deprecated 3.5.0 Use \Kirby\Toolkit\Locale::set() instead
+     *
      * @param string|array $locale
      */
     public function setLocale($locale): void
     {
-        if (is_array($locale) === true) {
-            foreach ($locale as $key => $value) {
-                setlocale($key, $value);
-            }
-        } else {
-            setlocale(LC_ALL, $locale);
-        }
+        Locale::set($locale);
     }
 
     /**
      * Load a specific translation by locale
      *
-     * @param string|null $locale
+     * @param string|null $locale Locale name or `null` for the current locale
      * @return \Kirby\Cms\Translation|null
      */
-    public function translation(string $locale = null)
+    public function translation(?string $locale = null)
     {
         $locale = $locale ?? I18n::locale();
         $locale = basename($locale);
@@ -156,6 +187,11 @@ trait AppTranslations
 
         // get injected translation data from plugins etc.
         $inject = $this->extensions['translations'][$locale] ?? [];
+
+        // inject current language translations
+        if ($language = $this->language($locale)) {
+            $inject = array_merge($inject, $language->translations());
+        }
 
         // load from disk instead
         return Translation::load($locale, $this->root('i18n:translations') . '/' . $locale . '.json', $inject);
@@ -172,6 +208,23 @@ trait AppTranslations
             return $this->translations;
         }
 
-        return Translations::load($this->root('i18n:translations'), $this->extensions['translations'] ?? []);
+        $translations = $this->extensions['translations'] ?? [];
+
+        // injects languages translations
+        if ($languages = $this->languages()) {
+            foreach ($languages as $language) {
+                // merges language translations with extension translations
+                if ($language->translations()) {
+                    $translations[$language->code()] = array_merge(
+                        $translations[$language->code()],
+                        $language->translations()
+                    );
+                }
+            }
+        }
+
+        $this->translations = Translations::load($this->root('i18n:translations'), $translations);
+
+        return $this->translations;
     }
 }

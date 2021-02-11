@@ -71,10 +71,13 @@ class F
         ],
         'image' => [
             'ai',
+            'avif',
             'bmp',
             'gif',
             'eps',
             'ico',
+            'j2k',
+            'jp2',
             'jpeg',
             'jpg',
             'jpe',
@@ -103,7 +106,7 @@ class F
         ],
     ];
 
-    public static $units = ['B', 'kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+    public static $units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
 
     /**
      * Appends new content to an existing file
@@ -357,25 +360,63 @@ class F
     }
 
     /**
-     * Loads a file and returns the result
+     * Loads a file and returns the result or `false` if the
+     * file to load does not exist
      *
      * @param string $file
      * @param mixed $fallback
+     * @param array $data Optional array of variables to extract in the variable scope
      * @return mixed
      */
-    public static function load(string $file, $fallback = null)
+    public static function load(string $file, $fallback = null, array $data = [])
     {
-        if (file_exists($file) === false) {
+        if (is_file($file) === false) {
             return $fallback;
         }
 
-        $result = include $file;
+        // we use the loadIsolated() method here to prevent the included
+        // file from overwriting our $fallback in this variable scope; see
+        // https://www.php.net/manual/en/function.include.php#example-124
+        $result = static::loadIsolated($file, $data);
 
         if ($fallback !== null && gettype($result) !== gettype($fallback)) {
             return $fallback;
         }
 
         return $result;
+    }
+
+    /**
+     * Loads a file with as little as possible in the variable scope
+     *
+     * @param string $file
+     * @param array $data Optional array of variables to extract in the variable scope
+     * @return mixed
+     */
+    protected static function loadIsolated(string $file, array $data = [])
+    {
+        // extract the $data variables in this scope to be accessed by the included file;
+        // protect $file against being overwritten by a $data variable
+        $___file___ = $file;
+        extract($data);
+
+        return include $___file___;
+    }
+
+    /**
+     * Loads a file using `include_once()` and returns whether loading was successful
+     *
+     * @param string $file
+     * @return bool
+     */
+    public static function loadOnce(string $file): bool
+    {
+        if (is_file($file) === false) {
+            return false;
+        }
+
+        include_once $file;
+        return true;
     }
 
     /**
@@ -484,9 +525,12 @@ class F
      * Converts an integer size into a human readable format
      *
      * @param mixed $size The file size or a file path
-     * @return string|int
+     * @param string|null|false $locale Locale for number formatting,
+     *                                  `null` for the current locale,
+     *                                  `false` to disable number formatting
+     * @return string
      */
-    public static function niceSize($size): string
+    public static function niceSize($size, $locale = null): string
     {
         // file mode
         if (is_string($size) === true && file_exists($size) === true) {
@@ -498,21 +542,37 @@ class F
 
         // avoid errors for invalid sizes
         if ($size <= 0) {
-            return '0 kB';
+            return '0 KB';
         }
 
         // the math magic
-        return round($size / pow(1024, ($i = floor(log($size, 1024)))), 2) . ' ' . static::$units[$i];
+        $size = round($size / pow(1024, ($unit = floor(log($size, 1024)))), 2);
+
+        // format the number if requested
+        if ($locale !== false) {
+            $size = I18n::formatNumber($size, $locale);
+        }
+
+        return $size . ' ' . static::$units[$unit];
     }
 
     /**
-     * Reads the content of a file
+     * Reads the content of a file or requests the
+     * contents of a remote HTTP or HTTPS URL
      *
-     * @param string $file The path for the file
+     * @param string $file The path for the file or an absolute URL
      * @return string|false
      */
     public static function read(string $file)
     {
+        if (
+            is_file($file) !== true &&
+            Str::startsWith($file, 'https://') !== true &&
+            Str::startsWith($file, 'http://') !== true
+        ) {
+            return false;
+        }
+
         return @file_get_contents($file);
     }
 
@@ -538,7 +598,7 @@ class F
             return $newRoot;
         }
 
-        if (F::move($file, $newRoot) !== true) {
+        if (F::move($file, $newRoot, $overwrite) !== true) {
             return false;
         }
 
@@ -721,6 +781,18 @@ class F
         }
 
         return null;
+    }
+
+    /**
+     * Returns all extensions of a given file type
+     * or `null` if the file type is unknown
+     *
+     * @param string $type
+     * @return array|null
+     */
+    public static function typeToExtensions(string $type): ?array
+    {
+        return static::$types[$type] ?? null;
     }
 
     /**
