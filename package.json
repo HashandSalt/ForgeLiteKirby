@@ -1,28 +1,26 @@
 {
   "name": "forge",
-  "version": "2.0.0",
+  "version": "2.0.5",
   "description": "A boilerplate for Kirby CMS & Slate",
   "author": "Hash&Salt",
   "email": "hello@hashandsalt.com",
   "license": "MIT",
   "config": {
-    "webpack": "node_modules/laravel-mix/setup/webpack.config.js",
     "favout": "public/assets/favicon",
     "speeddevurl": "http://forge.test",
     "speedliveurl": "http://forge.test"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "yarn watch",
-    "dev": "cross-env NODE_ENV=development webpack --progress --hide-modules --config=$npm_package_config_webpack",
-    "watch": "cross-env NODE_ENV=development webpack --watch --progress --hide-modules --config=$npm_package_config_webpack",
-    "production": "cross-env NODE_ENV=production webpack --progress --hide-modules --config=$npm_package_config_webpack",
-    "deploy:live:sim": "./deploy live",
-    "deploy:live": "./deploy live go",
-    "deploy:staging:sim": "./deploy staging",
-    "deploy:staging": "./deploy staging go",
-    "content:sync:sim": "./deploy sync",
-    "content:sync": "./deploy sync go",
+    "start": "npx mix watch",
+    "dev": "npx mix",
+    "production": "npx mix --production",
+    "deploy:live:sim": "./config/deploy live",
+    "deploy:live": "./config/deploy live go",
+    "deploy:staging:sim": "./config/deploy staging",
+    "deploy:staging": "./config/deploy staging go",
+    "content:sync:sim": "./config/deploy sync",
+    "content:sync": "./config/deploy sync go",
     "favicon": "real-favicon generate ./config/faviconDescription.json ./config/faviconData.json $npm_package_config_favout",
     "favicon-inject": "real-favicon inject ./config/faviconData.json ./config/ config/*.html",
     "sitespeed:dev": "sitespeed.io $npm_package_config_speeddevurl -b chrome",
@@ -31,12 +29,12 @@
   "devDependencies": {
     "@slateengine/slatesass": "^8.0.5",
     "@slateengine/slatesasskits": "^8.0.7",
-    "browser-sync": "^2.26.13",
-    "browser-sync-webpack-plugin": "^2.0.1",
-    "cross-env": "^7.0.2",
-    "laravel-mix": "^5.0.7",
-    "sass": "^1.27.0",
-    "sass-loader": "^8.0.2",
-    "vue-template-compiler": "^2.6.12"
-  }
+    "browser-sync": "^2.26.14",
+    "browser-sync-webpack-plugin": "2.2.2",
+    "laravel-mix": "^6.0.13",
+    "postcss": "^8.1",
+    "sass": "^1.32.8",
+    "sass-loader": "10.*"
+  },
+  "dependencies": {}
 }
