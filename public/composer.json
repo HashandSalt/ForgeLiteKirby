@@ -20,7 +20,8 @@
         "hashandsalt/kirby3-seo": "^1.0",
         "hashandsalt/kirby3-schema": "^0.0.1",
         "oblik/kirby-link-field": "^3.0",
-        "medienbaecker/autoresize": "^2.0"
+        "medienbaecker/autoresize": "^2.0",
+        "schnti/cachebuster": "^1.0"
     },
     "config": {
         "optimize-autoloader": true

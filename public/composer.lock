@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b237cdc0d49e17efe27dc84f1f534df2",
+    "content-hash": "2a785e62464d6c8eb56955fccc19e520",
     "packages": [
         {
             "name": "claviska/simpleimage",
@@ -812,6 +812,50 @@
                 "source": "https://github.com/php-fig/log/tree/1.1.3"
             },
             "time": "2020-03-23T09:12:05+00:00"
+        },
+        {
+            "name": "schnti/cachebuster",
+            "version": "1.0.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/schnti/kirby3-cachebuster.git",
+                "reference": "2bf22c21d9297190cccf818a26ea5cc05a09c089"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/schnti/kirby3-cachebuster/zipball/2bf22c21d9297190cccf818a26ea5cc05a09c089",
+                "reference": "2bf22c21d9297190cccf818a26ea5cc05a09c089",
+                "shasum": ""
+            },
+            "require": {
+                "getkirby/composer-installer": "^1.1"
+            },
+            "type": "kirby-plugin",
+            "extra": {
+                "installer-name": "cachebuster"
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Timo Schneider",
+                    "email": "info@kleiner-als.de",
+                    "homepage": "https://kleiner-als.de"
+                }
+            ],
+            "description": "Kirby 3 Cachebuster Plugin",
+            "keywords": [
+                "kirby3",
+                "kirby3-cms",
+                "kirby3-plugin"
+            ],
+            "support": {
+                "issues": "https://github.com/schnti/kirby3-cachebuster/issues",
+                "source": "https://github.com/schnti/kirby3-cachebuster/tree/1.0.2"
+            },
+            "time": "2019-04-14T18:04:47+00:00"
         },
         {
             "name": "spatie/schema-org",
