@@ -1,4 +1,11 @@
 <?php
 return [
-    'debug' => true
+    
+    // Debugging
+    'debug' => true,
+    
+    // Cache Buster
+    'schnti.cachebuster.active' => false,
+
+
 ];
