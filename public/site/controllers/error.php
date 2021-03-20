@@ -1,7 +1,5 @@
 <?php
 
-use Uniform\Form;
-
 return function ($page, $kirby, $site) {
 
   // SEO
