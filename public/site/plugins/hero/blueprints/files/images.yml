@@ -1,0 +1,34 @@
+title:                 Images
+
+accept:                image/*
+
+columns:
+
+  # main
+  left:
+    width:         2/3
+    sections:
+      meta:
+        type:      fields
+        fields:
+          alt:
+            label: Alt
+            type:  text
+          caption:
+            label: Caption
+            type:  textarea
+          focus:
+            label: Focus
+            type:  focus
+
+  # sidebar
+  right:
+    width:         1/3
+    sections:
+      feature:
+        type:      fields
+        fields:
+          feature:
+            label: Feature Image?
+            type:  toggle
+            width: 1/3

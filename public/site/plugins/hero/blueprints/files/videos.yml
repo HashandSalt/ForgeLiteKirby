@@ -1,0 +1,31 @@
+title:                 Videos
+
+accept:                video/*
+
+columns:
+
+  # main
+  left:
+    width:         2/3
+    sections:
+      meta:
+        type:      fields
+        fields:
+          alt:
+            label: Title
+            type:  text
+          caption:
+            label: Caption
+            type:  textarea
+
+  # sidebar
+  right:
+    width:         1/3
+    sections:
+      feature:
+        type:      fields
+        fields:
+          poster:
+            label: Poster
+            type:  image
+            width: 1/3
