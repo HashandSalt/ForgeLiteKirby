@@ -12,4 +12,74 @@ Vivamus sagittis lacus vel augue laoreet rutrum faucibus dolor auctor. Sed posue
 
 ----
 
+Herotype: slides
+
+----
+
+Herosize: medium
+
+----
+
+Herotint: true
+
+----
+
+Herotintcolor: #00000061
+
+----
+
+Herotitle: Forge
+
+----
+
+Herotext: Vivamus sagittis lacus vel augue laoreet rutrum faucibus dolor auctor. Sed posuere consectetur est at lobortis. Maecenas faucibus mollis interdum. Maecenas faucibus mollis interdum.
+
+----
+
+Heroslides:
+
+- 3sbk0w5f9o.jpg
+- lw31n7hd1i.jpg
+- mhl5llu02e.jpg
+
+----
+
+Heropages: 
+
+----
+
+Heroimage: 
+
+----
+
+Herovideo: 
+
+----
+
+Heroposter: 
+
+----
+
+Herocolor:
+
+color: '#3c3c3c'
+
+----
+
+Seotitle: Home
+
+----
+
+Seotags: 
+
+----
+
+Seometa: A starting point for Kirby 3
+
+----
+
+Shareimage: 
+
+----
+
 Featureinnav: true

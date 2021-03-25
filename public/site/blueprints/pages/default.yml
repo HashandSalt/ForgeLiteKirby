@@ -5,5 +5,8 @@ tabs:
   # CONTENT
   content: tabs/content
 
+  # SEO
+  seo: tabs/seo/meta
+
   # PAGE FILES
   files:   tabs/files

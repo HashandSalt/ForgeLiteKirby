@@ -34,7 +34,10 @@
     "laravel-mix": "^6.0.13",
     "postcss": "^8.1",
     "sass": "^1.32.8",
-    "sass-loader": "10.*"
+    "sass-loader": "10.*",
+    "tiny-slider": "^2.9.3"
   },
-  "dependencies": {}
+  "dependencies": {
+   
+  }
 }

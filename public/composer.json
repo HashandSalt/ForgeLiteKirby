@@ -21,7 +21,12 @@
         "hashandsalt/kirby3-schema": "^0.0.1",
         "oblik/kirby-link-field": "^3.0",
         "medienbaecker/autoresize": "^2.0",
-        "schnti/cachebuster": "^1.0"
+        "schnti/cachebuster": "^1.0",
+        "timoetting/kirby-color": "^1.0",
+        "flokosiol/focus": "^3.0",
+        "oblik/kirby-entity-field": "^1.0",
+        "hashandsalt/kirby3-webp": "^0.0.6",
+        "hashandsalt/hero": "^1.0"
     },
     "config": {
         "optimize-autoloader": true

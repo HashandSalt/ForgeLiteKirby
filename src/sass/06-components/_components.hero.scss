@@ -1,0 +1,206 @@
+// ======================================================================
+// 06-components - Hero
+// ======================================================================
+
+
+@import '../../../node_modules/tiny-slider/src/tiny-slider.scss';
+
+// Hero Structure
+
+#hero {
+  position: relative;
+  display: grid;
+  width: 100%;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+  grid-template-areas: 'hero-media' 'hero-content';
+  overflow-x: hidden;
+  background-color: $jet;
+  margin-bottom: rem(48px);
+
+  h1 {
+    @include type-free(38px, 24px, 12px, 48px, true);
+    @include media("screen", "<large") {
+      text-align: center;
+    }
+  }
+
+  h1,
+  p {
+    color: #e3e3e3;
+  }
+
+  p {
+    @include type-free(24px, 24px, 0px, 36px, true);
+    @include media("screen", ">large") {
+      max-width: 60%;
+      margin-top: 0;
+    }
+    @include media("screen", "<large") {
+      text-align: center;
+    }
+  }
+
+  &.small {
+    height: 100%;
+    min-height: rem(400px);
+  }
+
+  &.medium {
+    height: 100%;
+    min-height: rem(600px);
+  }
+
+  &.large {
+    height: 100%;
+    min-height: rem(800px);
+  }
+
+  &.full {
+    height: 100%;
+    min-height: 100vh;
+  }
+}
+
+.hero-content {
+  grid-area: hero-media-start / hero-media-start;
+  z-index: 2;
+  display: grid;
+  overflow: hidden;
+  grid-template-rows: 1fr;
+  pointer-events: none;
+
+  &.header-inside {
+    grid-template-rows: rem(120px) 1fr;
+  }
+
+  .container {
+    display: flex;
+  }
+
+  .align-center {
+    align-items: center;
+  }
+}
+
+.hero-content-wrap {
+  width: 100%;
+}
+
+.hero-media {
+  grid-area: hero-media-start / hero-media-start;
+  z-index: 1;
+  position: relative;
+  max-width: calc(100vw);
+  height: 100%;
+  // Modes
+  &.image {
+    figure {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  &.video {
+    .video-wrapper {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    video {
+      box-sizing: border-box;
+      height: 56.25vw;
+      left: 50%;
+      min-height: 100%;
+      min-width: 100%;
+      transform: translate(-50%, -50%);
+      position: absolute;
+      top: 50%;
+      width: 177.77777778vh;
+    }
+  }
+
+  &.image,
+  &.slides {
+    .slide-wrapper {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+    }
+
+    img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+}
+
+.slide-inner {
+  position: relative;
+  display: grid;
+  width: 100%;
+  height: 100%;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+  grid-template-areas: 'hero-slidemedia' 'hero-slidecontent';
+  overflow-x: hidden;
+}
+
+.slide-media {
+  grid-area: hero-slidemedia-start / hero-slidemedia-start;
+  display: grid;
+  overflow: hidden;
+}
+
+.slide-detail {
+  grid-area: hero-slidemedia-start / hero-slidemedia-start;
+  z-index: 2;
+  display: flex;
+  overflow: hidden;
+  position: relative;
+  align-items: center;
+}
+// Hero Tint
+
+.hero-tint {
+  position: relative;
+
+  &::before {
+    content: '';
+    display: block;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    background-color: var(--herotintcolor);
+    z-index: 1;
+  }
+}
+
+// TNS Mods
+
+.tns-outer [aria-controls],
+.tns-outer [data-action] {
+  position: absolute;
+  left: -10000rem;
+}
+
+.tns-inner,
+.tns-item,
+.tns-outer,
+.tns-slider {
+  height: 100%;
+}

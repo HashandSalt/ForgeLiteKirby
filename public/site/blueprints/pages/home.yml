@@ -1,0 +1,15 @@
+title:     Home
+
+tabs:
+
+  # CONTENT
+  content: tabs/content
+
+  # Hero
+  hero: tabs/hero
+
+  # SEO
+  seo: tabs/seo/meta
+
+  # PAGE FILES
+  files:   tabs/files

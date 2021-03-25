@@ -16,10 +16,10 @@ tabs:
             status:   listed
             layout:   cards
             sortBy:   title
-            size:     tiny
+            size:     small
             limit:    20
             image:
-              cover:  false
+              cover:  true
               back:   white
               ratio:  16/9
 

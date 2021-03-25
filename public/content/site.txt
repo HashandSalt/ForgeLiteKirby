@@ -8,3 +8,7 @@ Menu:
   link:
     type: page
     value: home
+- 
+  link:
+    type: page
+    value: about

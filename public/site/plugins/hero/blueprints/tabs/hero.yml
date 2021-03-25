@@ -1,0 +1,167 @@
+label:                     Hero
+icon:                      bolt
+columns:
+
+
+  top:
+    width:                 3/3
+    sections:
+      herotypechoice:
+        type:              fields
+        fields:
+          herotype:
+            label:         Type
+            type:          radio
+            columns:       5
+
+            options:
+              color:       Color
+              video:       Video
+              slides:      Slides
+              image:       Image
+              pages:       Pages
+
+
+  left:
+    width:                 1/3
+    sections:
+
+      # HERO SETTINGS
+      herosettings:
+        type:              fields
+        fields:
+
+
+          herosize:
+            label:         Size
+            type:          select
+
+            options:
+              small:       Small
+              medium:      Medium
+              large:       Large
+              full:        Full
+
+          herotint:
+            label:         Tint
+            type:          toggle
+            width:         1/2
+
+          herotintcolor:
+            label:         Tint Color
+            type:          color
+            editableAlpha: true
+            default:       "#00000061"
+            width:         1/2
+
+  right:
+    width:                 2/3
+    sections:
+
+      # HERO CONTENT
+      herocontent:
+        type:              fields
+        fields:
+          herotitle:
+            label:         Title
+            type:          text
+
+
+          herotext:
+            label:         Content
+            type:          textarea
+
+
+      # HERO SLIDES
+      heroslides:
+        type:              fields
+        fields:
+          heroslides:
+            label:         Images
+            type:          files
+            layout:        cards
+            size:          small
+            query:         site.index.images.filterBy("extension", "webp")
+            uploads:       images
+            image:
+              cover:       true
+              ratio:       16/9
+            when:
+              herotype:    slides
+
+      # HERO SLIDES
+      herospages:
+        type:              fields
+        fields:
+          heropages:
+            label:         Pages
+            type:          pages
+            layout:        cards
+            size:          small
+            query:         site.pages
+            image:
+              cover:       true
+              ratio:       16/9
+            when:
+              herotype:    pages
+
+
+      # HERO IMAGE
+      heroimage:
+        type:              fields
+        fields:
+          heroimage:
+            label:         Image
+            type:          files
+            max:           1
+            query:         site.index.images.filterBy("extension", "webp")
+            uploads:       images
+            image:
+              cover:       true
+              ratio:       16/9
+            when:
+              herotype:    image
+
+      # HERO VIDEO
+      herovideo:
+        type:              fields
+        fields:
+          herovideo:
+            label:         Video
+            type:          files
+            max:           1
+            query:         page.videos
+            uploads:       images
+            width:         1/2
+            image:
+              cover:       true
+              ratio:       16/9
+            when:
+              herotype:    video
+          heroposter:
+            label:         Poster
+            type:          files
+            max:           1
+            query:         page.images.filterBy("extension", "jpg")
+            uploads:       images
+            width:         1/2
+            image:
+              cover:       true
+              ratio:       16/9
+            when:
+              herotype:    video
+
+
+      # HERO COLOR
+      herocolor:
+        type:              fields
+        fields:
+          herocolor:
+            label:         Hero Color
+            type:          entity
+            when:
+              herotype:    color
+            fields:
+              color:
+                type:      color
+                default:   "#96def0"
