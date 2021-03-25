@@ -348,7 +348,7 @@ img {
 }
 @media (max-width: 800px) {
   .logo {
-    margin: 0 auto;
+    margin: 0 auto 1.5rem auto;
   }
 }
 
@@ -482,6 +482,12 @@ footer {
   background-color: #2980b9;
   color: #eee;
   border: none;
+}
+.header .menu-list .active a {
+  background-color: #2980b9;
+}
+footer .menu-list .active a {
+  border-bottom: 2px solid #eee;
 }
 
 .form {

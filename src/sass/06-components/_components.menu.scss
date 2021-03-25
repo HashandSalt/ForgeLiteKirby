@@ -32,6 +32,8 @@
     }
   }
 
+
+
   .header & {
     a {
       background-color: $jet;
@@ -42,6 +44,21 @@
         color: $bright;
         border: none;
       }
+
+
     }
+
+    .active a {
+      background-color: $secondary;
+    }
+
   }
+
+  footer & {
+    .active a {
+      border-bottom: 2px solid $bright;
+    }
+
+  }
+
 }

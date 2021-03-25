@@ -12,7 +12,7 @@ Vivamus sagittis lacus vel augue laoreet rutrum faucibus dolor auctor. Sed posue
 
 ----
 
-Herotype: color
+Herotype: slides
 
 ----
 
@@ -62,11 +62,11 @@ Heroposter:
 
 Herocolor:
 
-color: '#96def0'
+color: '#3c3c3c'
 
 ----
 
-Seotitle: ForgeLite
+Seotitle: Home
 
 ----
 
